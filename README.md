@@ -26,7 +26,7 @@ s = '49276d206b696c6c696e6720796f757220627261696e206c696b65206120706f69736f6e6f7
 hex2binfile(s, 'slood.bin');
 ~~~
 
-Note 👜: `partition` is inside the `+ext` directory. This is how Matlab and now Octave do namespaces. (`partition` is [public domain](https://github.com/fasiha/personal-matlab-namespace/blob/master/%2Barf/partition.m).) The exact same thing could be affected with built-in `mat2cell`.
+Note [👜]: `partition` is inside the `+ext` directory. This is how Matlab and now Octave do namespaces. (`partition` is [public domain](https://github.com/fasiha/personal-matlab-namespace/blob/master/%2Barf/partition.m).) The exact same thing could be affected with built-in `mat2cell`.
 
 Now check the file with `xxd`, which is a hex dumper that seems to be affiliated with Vim on Homebrew/macOS:
 ```
@@ -38,8 +38,8 @@ $ xxd slood.bin
 Looks good!
 
 > Personal sidenote: it took me a long time to appreciate this, despite being married to an embedded engineer—one byte = eight bits = 0 to 255 (unsigned) = *two* hex digits, 0x0 to 0xFF.
->
-> > (That’s why the implementation above throws an exception for odd-sized hex strings: I couldn’t decide what to do with the last single hex digit. It could be padded with zero to the right, or to the left, or it could be omitted, or… Recently I’ve been leaning towards writing functions with very narrow expectations, and throwing errors when those are broken, instead of trying to be “smart”, since my expectation of “smart” is fickle.)
+
+That’s why the implementation above throws an exception for odd-sized hex strings: I couldn’t decide what to do with the last single hex digit. It could be padded with zero to the right, or to the left, or it could be omitted, or… Recently I’ve been leaning towards writing functions with very narrow expectations, and throwing errors when those are broken, instead of trying to be “smart”, since my expectation of “smart” is fickle.
 
 ### Haskell
 
@@ -49,7 +49,7 @@ import qualified Data.ByteString as B
 
 hexStringToInts s = case s of
   [] -> []
-  [singleEntry] -> []
+  [singleEntry] -> [] -- [👟]
   x:y:zs -> (read ['0', 'x', x, y] :: Word8) : hexStringToInts zs
 
 hexStringToFile str filename = B.writeFile filename . B.pack . hexStringToInts $ str
@@ -57,6 +57,8 @@ hexStringToFile str filename = B.writeFile filename . B.pack . hexStringToInts $
 s = "49276d206b696c6c696e6720796f757220627261696e206c696b65206120706f69736f6e6f7573206d757368726f6f6d"
 hexStringToFile s "water.bin"
 ~~~
-(Sidenote: the above Haskell and Octave versions were written entirely in [Atom](https://atom.io) with the [Hydrogen](https://atom.io/packages/hydrogen) plugin talking to [Octave](https://github.com/Calysto/octave_kernel) and [IHaskell](https://github.com/gibiansky/IHaskell) Jupyter plugins. No REPLs or interpreters were harmed in the making of these two code snippets!)
+Note [👟]: this implementation doesn’t error if given a trailing character, it just ignores it thanks to this line in the `case`. If this was omitted, a hanging character would be interpreted as a single-digit byte, i.e., `a`→`0xa`→`10 :: Word8`. I wanted to avoid this to keep the API the same as the Octave version, hence [👟].
 
 Interestingly enough, Haskell (IHaskell in Atom via Hydrogen and Jupyter) prints out `ByteString`s as ASCII, so when you do `B.pack . hexStringToInts $ s`, you see `"I'm killing your brain like a poisonous mushroom"` 😂, same as above.
+
+(Sidenote: the above Haskell and Octave implementations were written entirely in [Atom](https://atom.io) with the [Hydrogen](https://atom.io/packages/hydrogen) plugin talking to [Octave](https://github.com/Calysto/octave_kernel) and [IHaskell](https://github.com/gibiansky/IHaskell) Jupyter plugins. No REPLs or interpreters were harmed in the making of these two code snippets!)
