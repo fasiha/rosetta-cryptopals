@@ -11,7 +11,7 @@ function hex2binfile(s, fname)
   end
 
   pairs = ext.partition(s, [1 2]); % [👜]
-  raw = cellfun(@(d) uint8(hex2dec(d)), pairs);
+  raw = uint8(cellfun(@hex2dec, pairs));
   fid = fopen(fname, 'wb');
 
   if fid > 0
