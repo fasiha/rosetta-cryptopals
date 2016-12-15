@@ -40,3 +40,18 @@ Looks good!
 > Personal sidenote: it took me a long time to appreciate this, despite being married to an embedded engineer—one byte = eight bits = 0 to 255 (unsigned) = *two* hex digits, 0x0 to 0xFF.
 >
 > > (That’s why the implementation above throws an exception for odd-sized hex strings: I couldn’t decide what to do with the last single hex digit. It could be padded with zero to the right, or to the left, or it could be omitted, or… Recently I’ve been leaning towards writing functions with very narrow expectations, and throwing errors when those are broken, instead of trying to be “smart”, since my expectation of “smart” is fickle.)
+
+### Haskell
+
+~~~haskell
+import Data.Word
+import qualified Data.ByteString as B
+hexStringToInts s = case s of
+  [] -> []
+  [singleEntry] -> []
+  x:y:zs -> (read ['0', 'x', x, y] :: Word8) : hexStringToInts zs
+hexStringToFile str filename = B.writeFile filename . B.pack . hexStringToInts $ s
+
+s = "49276d206b696c6c696e6720796f757220627261696e206c696b65206120706f69736f6e6f7573206d757368726f6f6d"
+hexStringToFile s "water.bin"
+~~~
