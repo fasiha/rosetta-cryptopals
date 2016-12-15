@@ -50,7 +50,7 @@ hexStringToInts s = case s of
   [] -> []
   [singleEntry] -> []
   x:y:zs -> (read ['0', 'x', x, y] :: Word8) : hexStringToInts zs
-hexStringToFile str filename = B.writeFile filename . B.pack . hexStringToInts $ s
+hexStringToFile str filename = B.writeFile filename . B.pack . hexStringToInts $ str
 
 s = "49276d206b696c6c696e6720796f757220627261696e206c696b65206120706f69736f6e6f7573206d757368726f6f6d"
 hexStringToFile s "water.bin"
