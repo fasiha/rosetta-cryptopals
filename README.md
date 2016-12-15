@@ -48,16 +48,15 @@ import Data.Word
 import qualified Data.ByteString as B
 
 hexStringToInts s = case s of
-  [] -> []
-  [singleEntry] -> [] -- [👟]
   x:y:zs -> (read ['0', 'x', x, y] :: Word8) : hexStringToInts zs
+  _ -> [] -- [👟]
 
 hexStringToFile str filename = B.writeFile filename . B.pack . hexStringToInts $ str
 
 s = "49276d206b696c6c696e6720796f757220627261696e206c696b65206120706f69736f6e6f7573206d757368726f6f6d"
 hexStringToFile s "water.bin"
 ~~~
-Note [👟]: this implementation doesn’t error if given a trailing character, it just ignores it thanks to this line in the `case`. If this was omitted, a hanging character would cause an error “non-exhaustive `case`” error, since the final branch requires two elements at the head of the list. It would be nice to find a way to ensure `case` is always exhaustive at compile time…
+Note [👟]: this implementation doesn’t error if given a trailing character. Thanks to this 👟 line, any input that doesn’t have two leading elements is treated as the same, including the empty string and single-character strings.
 
 Interestingly enough, Haskell (IHaskell in Atom via Hydrogen and Jupyter) prints out `ByteString`s as ASCII, so when you do `B.pack . hexStringToInts $ s`, you see `"I'm killing your brain like a poisonous mushroom"` 😂, same as above.
 
