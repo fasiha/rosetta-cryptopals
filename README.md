@@ -142,3 +142,40 @@ This implementation makes *heavy* use of row-vs-column nuances (see all those `'
 Note [🌂]: the couple of implementations I saw on [Rosetta Code](http://rosettacode.org/wiki/Base64_encode_data#Manual_implementation) used string indexing, and that is probably both more efficient and more straightforward than this overengineered approach. The slight pedagogical advantage here is it shows how Matlab/Octave handles “arithmetic” on `char`s—they work but the result is numeric, and has to be applied to `char()` to get a string back.
 
 If you’re using actual Matlab, you can use this [Base64.m](https://github.com/fasiha/personal-matlab-namespace/blob/master/%2Barf/Base64m.m) wrapper to a Java method, `org.apache.commons.codec.binary.Base64.encodeBase64()` to test this.
+
+### Haskell
+~~~haskell
+import Data.Bits
+
+lut = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
+
+triplet2quad :: Word8 -> Word8 -> Word8 -> [Char]
+triplet2quad a b c =
+  let
+    a' = shiftR a 2 .&. 0x3f -- take first 6 bits of a
+    b' = shiftL a 4 .&. 0x3f + (shiftR b 4 .&. 0x0f)  -- take last 2 of a and first 4 of b
+    c' = shiftL b 2 .&. 0x3f + (shiftR c 6 .&. 0x03) -- last 4 of b + first 2 of c
+    d' = c .&. 0x3f -- last 6 of c
+  in
+    map ((!!) lut . fromIntegral) [a', b', c', d']
+
+chew :: [Word8] -> [Char]
+chew bs = case bs of
+  a:b:c:rest -> triplet2quad a b c ++ chew rest
+  a:b:[] -> triplet2quad a b 0 ++ "="
+  a:[] -> triplet2quad a 0 0 ++ "=="
+  _ -> []
+
+-- take 3 . hexStringToInts $ s
+-- triplet2quad 73 39 109
+
+chew . hexStringToInts $ s
+chew ([77] :: [Word8])
+chew ([77, 97] :: [Word8])
+chew ([77, 97, 110] :: [Word8])
+
+-- assert(strcmp(bytes2base64(uint8([77])), 'TQ=='));
+-- assert(strcmp(bytes2base64(uint8([77 97])), 'TWE='));
+-- assert(strcmp(bytes2base64(uint8([77 97 110])), 'TWFu'));
+
+~~~
