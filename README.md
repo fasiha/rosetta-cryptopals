@@ -5,25 +5,27 @@
 ### Octave/Matlab
 Using Octave, so I can define functions at the command-line instead of saving to a file (Matlab has an archaic one-function-one-file requirement).
 ~~~octave
-function hex2binfile(s, fname)
+function raw = hex2bytes(s)
   if mod(length(s), 2) ~= 0
-    error('hex2binfile:nonEvenInput', 'String must be even-length');
+    error('hex2bytes:nonEvenInput', 'String must be even-length');
   end
 
   pairs = ext.partition(s, [1 2]); % [👜]
   raw = uint8(cellfun(@hex2dec, pairs));
-  fid = fopen(fname, 'wb');
+end
 
+function bytes2file(bytes, fname)
+  fid = fopen(fname, 'wb');
   if fid > 0
-    fwrite(fid, raw, 'uint8');
+    fwrite(fid, bytes, 'uint8');
     fclose(fid);
   else
-    error('hex2binfile:fileError', 'Cannot create file %s', fname);
+    error('bytes2file:fileError', 'Cannot create file %s', fname);
   end
 end
 
 s = '49276d206b696c6c696e6720796f757220627261696e206c696b65206120706f69736f6e6f7573206d757368726f6f6d';
-hex2binfile(s, 'slood.bin');
+bytes2file(hex2bytes(s), 'slood.bin');
 ~~~
 
 Note [👜]: `partition` is inside the `+ext` directory. This is how Matlab and now Octave do namespaces. (`partition` is [public domain](https://github.com/fasiha/personal-matlab-namespace/blob/master/%2Barf/partition.m).) The exact same thing could be affected with built-in `mat2cell`.
