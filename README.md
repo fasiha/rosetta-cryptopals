@@ -1,6 +1,10 @@
-# Cryptopals
+# [Cryptopals Crypto Challenge](https://cryptopals.com/)
+
+(See also my [Rosetta Euler](https://github.com/fasiha/rosetta-euler), which is in a similar format, solving Project Euler problems.)
 
 ## Prelude: stringy hex⟹bytes⟹raw binary file
+
+A prelude to [set 1→challenge 1](https://cryptopals.com/sets/1/challenges/1).
 
 ### Octave/Matlab
 Using Octave, so I can define functions at the command-line instead of saving to a file (Matlab has an archaic one-function-one-file requirement).
@@ -96,6 +100,8 @@ fn main() {
 With `cargo build && cargo run`, `crust.bin` is created in the `hex2bytes` directory, with the same contents as the above Octave and Haskell implementations. I am sure I’m not doing error handing with `Result` properly (`try!()` and the two `unwrap()`s)—please enlighten me!
 
 ## Bytes⟹Base64
+
+Building on that, we can complete [set 1→challenge 1](https://cryptopals.com/sets/1/challenges/1).
 
 ### Octave
 ~~~octave
