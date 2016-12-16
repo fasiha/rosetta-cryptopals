@@ -1,2 +1,5 @@
 octave-workspace
 *.bin
+*.rs.bk
+*.lock
+target/

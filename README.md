@@ -63,3 +63,34 @@ Note [👟]: this implementation doesn’t error if given a trailing character. 
 Interestingly enough, Haskell (IHaskell in Atom via Hydrogen and Jupyter) prints out `ByteString`s as ASCII, so when you do `B.pack . hexStringToInts $ s`, you see `"I'm killing your brain like a poisonous mushroom"` 😂, same as above.
 
 (Sidenote: the above Haskell and Octave implementations were written entirely in [Atom](https://atom.io) with the [Hydrogen](https://atom.io/packages/hydrogen) plugin talking to [Octave](https://github.com/Calysto/octave_kernel) and [IHaskell](https://github.com/gibiansky/IHaskell) Jupyter plugins. No REPLs or interpreters were harmed in the making of these two code snippets!)
+
+### Rust
+My first non-trivial Rust adventure!
+~~~rust
+// included: hex2bytes/src/main.rs
+
+fn hex2bytes(s: &str) -> Vec<u8> {
+    let mut v: Vec<u8> = vec![0; s.len() / 2];
+    for i in 0..s.len() / 2 {
+        let sub = &s[i * 2..i * 2 + 2];
+        v[i] = u8::from_str_radix(sub, 16).unwrap();
+    }
+    v
+}
+
+fn bytes2file(fname: &str, v: &[u8]) -> std::io::Result<usize> {
+    use std::io::prelude::*;
+    use std::fs::File;
+
+    let mut buffer = try!(File::create(fname));
+    buffer.write(v)
+}
+
+fn main() {
+    println!("Hello, world!");
+    let s = "49276d206b696c6c696e6720796f757220627261696e206c696b65206120706f69736f6e6f7573206d757\
+             368726f6f6d";
+    bytes2file("crust.bin", hex2bytes(s).as_slice()).unwrap();
+}
+~~~
+With `cargo build && cargo run`, `crust.bin` is created in the `hex2bytes` directory, with the same contents as the above Octave and Haskell implementations. I am sure I’m not doing error handing with `Result` properly (`try!()` and the two `unwrap()`s)—please enlighten me!
