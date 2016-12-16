@@ -153,8 +153,8 @@ triplet2quad :: Word8 -> Word8 -> Word8 -> [Char]
 triplet2quad a b c =
   let
     a' = shiftR a 2 .&. 0x3f -- take first 6 bits of a
-    b' = shiftL a 4 .&. 0x3f + (shiftR b 4 .&. 0x0f)  -- take last 2 of a and first 4 of b
-    c' = shiftL b 2 .&. 0x3f + (shiftR c 6 .&. 0x03) -- last 4 of b + first 2 of c
+    b' = shiftL a 4 .&. 0x3f + (shiftR b 4 .&. 0xf) -- last 2 of a + first 4 of b
+    c' = shiftL b 2 .&. 0x3f + (shiftR c 6 .&. 0x3) -- last 4 of b + first 2 of c
     d' = c .&. 0x3f -- last 6 of c
   in
     map ((!!) lut . fromIntegral) [a', b', c', d']
@@ -162,20 +162,24 @@ triplet2quad a b c =
 chew :: [Word8] -> [Char]
 chew bs = case bs of
   a:b:c:rest -> triplet2quad a b c ++ chew rest
-  a:b:[] -> triplet2quad a b 0 ++ "="
-  a:[] -> triplet2quad a 0 0 ++ "=="
+  a:b:[] -> (init $ triplet2quad a b 0) ++ "="
+  a:[] -> (init . init $ triplet2quad a 0 0) ++ "=="
   _ -> []
-
--- take 3 . hexStringToInts $ s
--- triplet2quad 73 39 109
 
 chew . hexStringToInts $ s
 chew ([77] :: [Word8])
 chew ([77, 97] :: [Word8])
 chew ([77, 97, 110] :: [Word8])
 
+-- Output:
+-- "SSdtIGtpbGxpbmcgeW91ciBicmFpbiBsaWtlIGEgcG9pc29ub3VzIG11c2hyb29t"
+-- "TQ=="
+-- "TWE="
+-- "TWFu"
+
+-- Compare to Octave tests:
 -- assert(strcmp(bytes2base64(uint8([77])), 'TQ=='));
 -- assert(strcmp(bytes2base64(uint8([77 97])), 'TWE='));
 -- assert(strcmp(bytes2base64(uint8([77 97 110])), 'TWFu'));
-
 ~~~
+This works. Ain’t pretty. But I 🐷 it.
