@@ -189,3 +189,6 @@ intsToBase64 ([77, 97, 110] :: [Word8])
 -- assert(strcmp(bytes2base64(uint8([77 97 110])), 'TWFu'));
 ~~~
 This works. Ain’t pretty. But I 🐷 it.
+
+### Rust
+I’ve switched to [`rustup`](https://rustup.rs/). First, run `rustup install nightly`, then use `nightly` to build and run: `rustup run nightly cargo build && rustup run nightly cargo run`. This is so that I can use [slice patterns](https://doc.rust-lang.org/beta/book/slice-patterns.html).
