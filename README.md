@@ -147,29 +147,29 @@ If you’re using actual Matlab, you can use this [Base64.m](https://github.com/
 ~~~haskell
 import Data.Bits
 
-lut = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
+lutBase64 = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
 
-triplet2quad :: Word8 -> Word8 -> Word8 -> [Char]
-triplet2quad a b c =
+tripletToQuad :: Word8 -> Word8 -> Word8 -> [Char]
+tripletToQuad a b c =
   let
     a' = shiftR a 2 .&. 0x3f -- take first 6 bits of a
     b' = shiftL a 4 .&. 0x3f + (shiftR b 4 .&. 0xf) -- last 2 of a + first 4 of b
     c' = shiftL b 2 .&. 0x3f + (shiftR c 6 .&. 0x3) -- last 4 of b + first 2 of c
     d' = c .&. 0x3f -- last 6 of c
   in
-    map ((!!) lut . fromIntegral) [a', b', c', d']
+    map ((!!) lutBase64 . fromIntegral) [a', b', c', d']
 
-chew :: [Word8] -> [Char]
-chew bs = case bs of
-  a:b:c:rest -> triplet2quad a b c ++ chew rest
-  a:b:[] -> (init $ triplet2quad a b 0) ++ "="
-  a:[] -> (init . init $ triplet2quad a 0 0) ++ "=="
+word8sToBase64 :: [Word8] -> [Char]
+word8sToBase64 bs = case bs of
+  a:b:c:rest -> tripletToQuad a b c ++ word8sToBase64 rest
+  a:b:[] -> (init $ tripletToQuad a b 0) ++ "="
+  a:[] -> (init . init $ tripletToQuad a 0 0) ++ "=="
   _ -> []
 
-chew . hexStringToInts $ s
-chew ([77] :: [Word8])
-chew ([77, 97] :: [Word8])
-chew ([77, 97, 110] :: [Word8])
+word8sToBase64 . hexStringToInts $ s
+word8sToBase64 ([77] :: [Word8])
+word8sToBase64 ([77, 97] :: [Word8])
+word8sToBase64 ([77, 97, 110] :: [Word8])
 
 -- Output:
 -- "SSdtIGtpbGxpbmcgeW91ciBicmFpbiBsaWtlIGEgcG9pc29ub3VzIG11c2hyb29t"
