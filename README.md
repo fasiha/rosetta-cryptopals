@@ -32,7 +32,7 @@ s = '49276d206b696c6c696e6720796f757220627261696e206c696b65206120706f69736f6e6f7
 bytes2file(hex2bytes(s), 'slood.bin');
 ~~~
 
-Note [👜]: `partition` is inside the `+ext` directory. This is how Matlab and now Octave do namespaces. (`partition` is [public domain](https://github.com/fasiha/personal-matlab-namespace/blob/master/%2Barf/partition.m).) The exact same thing could be affected with built-in `mat2cell`.
+Note [👜]: `partition` is inside the `+ext` directory. This is how Matlab and now Octave do namespaces. (`partition` is [public domain](https://github.com/fasiha/personal-matlab-namespace/blob/master/%2Barf/partition.m).) With more logic you can do the same thing with built-in `mat2cell`.
 
 Now check the file with `xxd`, which is a hex dumper that seems to be affiliated with Vim on Homebrew/macOS:
 ```
