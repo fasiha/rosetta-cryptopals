@@ -159,17 +159,17 @@ tripletToQuad a b c =
   in
     map ((!!) lutBase64 . fromIntegral) [a', b', c', d']
 
-word8sToBase64 :: [Word8] -> [Char]
-word8sToBase64 bs = case bs of
-  a:b:c:rest -> tripletToQuad a b c ++ word8sToBase64 rest
+intsToBase64 :: [Word8] -> [Char]
+intsToBase64 bs = case bs of
+  a:b:c:rest -> tripletToQuad a b c ++ intsToBase64 rest
   a:b:[] -> (init $ tripletToQuad a b 0) ++ "="
   a:[] -> (init . init $ tripletToQuad a 0 0) ++ "=="
   _ -> []
 
-word8sToBase64 . hexStringToInts $ s
-word8sToBase64 ([77] :: [Word8])
-word8sToBase64 ([77, 97] :: [Word8])
-word8sToBase64 ([77, 97, 110] :: [Word8])
+intsToBase64 . hexStringToInts $ s
+intsToBase64 ([77] :: [Word8])
+intsToBase64 ([77, 97] :: [Word8])
+intsToBase64 ([77, 97, 110] :: [Word8])
 
 -- Output:
 -- "SSdtIGtpbGxpbmcgeW91ciBicmFpbiBsaWtlIGEgcG9pc29ub3VzIG11c2hyb29t"
