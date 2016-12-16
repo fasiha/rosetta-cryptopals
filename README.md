@@ -99,8 +99,8 @@ With `cargo build && cargo run`, `crust.bin` is created in the `hex2bytes` direc
 
 ### Octave
 ~~~octave
-function c = base64Lookup(n) % [🌂]
-  c = char((n <= 25) * ('A' + n) + ...
+function c = base64Lookup(n)
+  c = char((n <= 25) * ('A' + n) + ... % [🌂]
            (n <= 51 && n > 25) * ('a' + n - 26) + ...
            (n <= 61 && n > 51) * ('0' + n - 52) + ...
            (n == 62) * ('+') + (n == 63) * ('/'));
@@ -113,7 +113,7 @@ function encoded = bytes2base64(bytes)
   if Npadding > 0
     triplets{end} = [triplets{end} zeros(1, Npadding)];
   end
-  % Each triplet of uint8 -> quad of uint6 -> 2^6=64 element ASCII table
+  % Each triplet of uint8 -> quad of "uint6" -> 2^6=64 element ASCII table
   triplet2quad = @(v) bin2dec(reshape(dec2bin(v, 8)', 6, [])');
   encodeTriplet = @(v) arrayfun(@base64Lookup, triplet2quad(v));
 
@@ -123,11 +123,11 @@ function encoded = bytes2base64(bytes)
   end
 end
 
-% Check base64 lookup table:
+% First, check base64 lookup table:
 assert(strcmp('ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/', ...
               arrayfun(@base64Lookup, 0:63)), 'error in base64Lookup')
 
-% Overall tests, via Wikipedia
+% Then, a few complete Base64 tests, via Wikipedia
 assert(strcmp(bytes2base64(uint8([77])), 'TQ=='));
 assert(strcmp(bytes2base64(uint8([77 97])), 'TWE='));
 assert(strcmp(bytes2base64(uint8([77 97 110])), 'TWFu'));
@@ -137,7 +137,7 @@ assert(strcmp(bytes2base64(hex2bytes(s)), ...
               'SSdtIGtpbGxpbmcgeW91ciBicmFpbiBsaWtlIGEgcG9pc29ub3VzIG11c2hyb29t'));
 disp(bytes2base64(hex2bytes(s)));
 ~~~
-This implementation makes *heavy* use of row-vs-column nuances, array `reshape` magic, and `dec2bin`/`bin2dec` specifics. If you’re familiar with Octave/Matlab, I think this is a pretty elegant implementation, but one with even an intermediate familiarity with the language may struggle to get this right if they tried it.
+This implementation makes *heavy* use of row-vs-column nuances (see all those `'` transposes), array `reshape` magic, and `dec2bin`/`bin2dec` specifics. If you’re familiar with Octave/Matlab, I think this is a pretty elegant implementation, but one with even an intermediate familiarity with the language may struggle to get this right if they tried it.
 
 Note 🌂: the couple of implementations I saw on [Rosetta Code](http://rosettacode.org/wiki/Base64_encode_data#Manual_implementation) used string indexing, and that is probably both more efficient and more straightforward than this overengineered approach. The slight pedagogical advantage here is it shows how Matlab/Octave handles “arithmetic” on `char`s—they work but the result is numeric, and has to be applied to `char()` to get a string back.
 
