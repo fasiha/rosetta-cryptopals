@@ -192,3 +192,28 @@ This works. Ain’t pretty. But I 🐷 it.
 
 ### Rust
 I’ve switched to [`rustup`](https://rustup.rs/). First, run `rustup install nightly`, then use `nightly` to build and run: `rustup run nightly cargo build && rustup run nightly cargo run`. This is so that I can use [slice patterns](https://doc.rust-lang.org/beta/book/slice-patterns.html).
+
+
+## [Set 1, Challenge 2](https://cryptopals.com/sets/1/challenges/2)
+
+> Write a function that takes two equal-length buffers and produces their XOR combination.
+
+### Haskell
+
+~~~haskell
+import Data.List
+import Data.Bits
+import qualified
+import qualified Data.ByteString as B
+
+xorWord8s = zipWith xor
+
+string1 = "1c0111001f010100061a024b53535009181c"
+string2 = "686974207468652062756c6c277320657965"
+expected = "746865206b696420646f6e277420706c6179"
+hexStringToInts expected == xorWord8s
+  (hexStringToInts string1)
+  (hexStringToInts string2)
+B.pack . hexStringToInts $ expected
+~~~
+Behold, the shortest implementation. Thanks to pair programming 💚. And type hints/linter 💖.
