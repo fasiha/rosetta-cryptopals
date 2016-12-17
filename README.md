@@ -203,7 +203,6 @@ I’ve switched to [`rustup`](https://rustup.rs/). First, run `rustup install ni
 ~~~haskell
 import Data.List
 import Data.Bits
-import qualified
 import qualified Data.ByteString as B
 
 xorWord8s = zipWith xor
@@ -217,3 +216,26 @@ hexStringToInts expected == xorWord8s
 B.pack . hexStringToInts $ expected
 ~~~
 Behold, the shortest implementation. Thanks to pair programming 💚. And type hints/linter 💖.
+
+## Set 1, Challenge 3
+
+### Haskell
+~~~haskell
+import Text.Regex.Posix
+
+message = "1b37373331363f78151b7f2b783431333d78397828372d363c78373e783a393b3736"
+
+xorAll key = B.map (xor key)
+decode key = xorAll key . B.pack . hexStringToInts $ message
+score key = (decode key =~ "[a-zA-Z0-9 ]" :: Int) - (decode key =~ "[^a-zA-Z0-9 ]" :: Int)
+
+take 5 . sortOn (\(_,x,_) -> -1*x) $ zip3 [0..127] (map score [0..127]) (map decode [0..127])
+-- Looks like key 88 = 0x58 is the key!
+~~~
+A little bit messy, but that was fun!
+
+Note: for the above to work, I needed to do the following:
+
+- Register IHaskell with Jupyter, to be aware of Stack: `ihaskell install --stack`.
+- Install `regex-posix`: `stack install regex-posix`.
+- Finally, edit `~/.stack/global-project/stack.yaml` to list the following: `resolver: lts-6.2` instead of another `resolver`. There are newer resolvers, but this is the one from IHaskell. Without this, Atom/Hydrogen will instantiate a IHaskell Jupyter session using whatever `resolver` is listed in `~/.stack/global-project/stack.yaml` which did *not* work if I registered IHaskell with Jupyter *with* Stack.
