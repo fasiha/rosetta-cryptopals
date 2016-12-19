@@ -20,6 +20,7 @@ fn bytes2file(fname: &str, v: &[u8]) -> std::io::Result<usize> {
     buffer.write(v)
 }
 
+// FIXME: Not ideal that this returns a heap-allocated vector.
 fn triplet2quad(a0: u8, b0: u8, c0: u8) -> Vec<u8> {
     let lut = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789".as_bytes();
     let a = a0 >> 2;
@@ -46,14 +47,11 @@ fn encode(bytes: Vec<u8>) -> String {
                 out[i * 4] = quad[0];
                 out[i * 4 + 1] = quad[1];
                 out[i * 4 + 2] = quad[2];
-                out[i * 4 + 3] = '=' as u8;
             }
             &[x] => {
                 let quad = triplet2quad(x, 0, 0);
                 out[i * 4] = quad[0];
                 out[i * 4 + 1] = quad[1];
-                out[i * 4 + 2] = '=' as u8;
-                out[i * 4 + 3] = '=' as u8;
             }
             _ => {}
         }
