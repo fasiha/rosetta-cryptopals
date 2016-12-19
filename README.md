@@ -322,7 +322,7 @@ xorAll key = B.map (xor key)
 decode key = xorAll key . B.pack . hexStringToInts $ message
 score key = (decode key =~ "[a-zA-Z0-9 ]" :: Int) - (decode key =~ "[^a-zA-Z0-9 ]" :: Int)
 ~~~
-I’m noticing a trend here: in Haskell, the core implementations are about as long as the testing code 😙:
+I’m noticing a trend here: in Haskell, the core implementations are only slightly longer than testing code 😙:
 ~~~haskell
 take 5 . sortOn (\(_,x,_) -> -1*x) $ zip3 [0..127] (map score [0..127]) (map decode [0..127])
 ~~~
