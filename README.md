@@ -4,23 +4,22 @@ My literate-programming-style document of solving the [Cryptopals Crypto Challen
 
 (See also my [Rosetta Euler](https://github.com/fasiha/rosetta-euler), which is in a similar format, solving Project Euler problems.)
 
-<!-- TOC depthFrom:1 depthTo:6 withLinks:1 updateOnSave:1 orderedList:0 -->
-
+<!-- TOC START min:1 max:3 link:true update:true -->
 - [Cryptopals Crypto Challenge](#cryptopals-crypto-challenge)
-	- [Prelude: stringy hex⟹bytes⟹raw binary file](#prelude-stringy-hexbytesraw-binary-file)
-		- [Octave/Matlab](#octavematlab)
-		- [Haskell](#haskell)
-		- [Rust](#rust)
-	- [Bytes⟹Base64](#bytesbase64)
-		- [Octave](#octave)
-		- [Haskell](#haskell)
-		- [Rust](#rust)
-	- [Set 1, Challenge 2](#set-1-challenge-2)
-		- [Haskell](#haskell)
-	- [Set 1, Challenge 3](#set-1-challenge-3)
-		- [Haskell](#haskell)
+  - [Prelude: stringy hex⟹bytes⟹raw binary file](#prelude-stringy-hexbytesraw-binary-file)
+    - [Octave/Matlab](#octavematlab)
+    - [Haskell](#haskell)
+    - [Rust](#rust)
+  - [Bytes⟹Base64](#bytesbase64)
+    - [Octave](#octave)
+    - [Haskell](#haskell-1)
+    - [Rust](#rust-1)
+  - [Set 1, Challenge 2](#set-1-challenge-2)
+    - [Haskell](#haskell-2)
+  - [Set 1, Challenge 3](#set-1-challenge-3)
+    - [Haskell](#haskell-3)
 
-<!-- /TOC -->
+<!-- TOC END -->
 
 ## Prelude: stringy hex⟹bytes⟹raw binary file
 
