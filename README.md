@@ -46,7 +46,10 @@ function bytes2file(bytes, fname)
     error('bytes2file:fileError', 'Cannot create file %s', fname);
   end
 end
+~~~
 
+Test this:
+~~~octave
 s = '49276d206b696c6c696e6720796f757220627261696e206c696b65206120706f69736f6e6f7573206d757368726f6f6d';
 bytes2file(hex2bytes(s), 'slood.bin');
 ~~~
@@ -77,7 +80,9 @@ hexStringToInts s = case s of
   _ -> [] -- [👟]
 
 hexStringToFile str filename = B.writeFile filename . B.pack . hexStringToInts $ str
-
+~~~
+First, confirm it works:
+~~~haskell
 s = "49276d206b696c6c696e6720796f757220627261696e206c696b65206120706f69736f6e6f7573206d757368726f6f6d"
 hexStringToFile s "water.bin"
 ~~~
@@ -147,7 +152,9 @@ function encoded = bytes2base64(bytes)
     encoded = strcat(encoded(1 : end - Npadding), ('=') * ones(1, Npadding));
   end
 end
-
+~~~
+With these core functions, run some tests:
+~~~octave
 % First, check base64 lookup table:
 assert(strcmp('ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/', ...
               arrayfun(@base64Lookup, 0:63)), 'error in base64Lookup')
@@ -157,7 +164,9 @@ assert(strcmp(bytes2base64(uint8([77])), 'TQ=='));
 assert(strcmp(bytes2base64(uint8([77 97])), 'TWE='));
 assert(strcmp(bytes2base64(uint8([77 97 110])), 'TWFu'));
 
-% Solution
+~~~
+Finally, evaluate the solution:
+~~~% Solution
 assert(strcmp(bytes2base64(hex2bytes(s)), ...
               'SSdtIGtpbGxpbmcgeW91ciBicmFpbiBsaWtlIGEgcG9pc29ub3VzIG11c2hyb29t'));
 disp(bytes2base64(hex2bytes(s)));
@@ -190,24 +199,15 @@ intsToBase64 bs = case bs of
   a:b:[] -> (init $ tripletToQuad a b 0) ++ "="
   a:[] -> (init . init $ tripletToQuad a 0 0) ++ "=="
   _ -> []
-
+~~~
+Problem solution and a handful of tests to confirm correctness for non-multiple-of-3 length inputs:
+~~~haskell
 intsToBase64 . hexStringToInts $ s
 intsToBase64 ([77] :: [Word8])
 intsToBase64 ([77, 97] :: [Word8])
 intsToBase64 ([77, 97, 110] :: [Word8])
-
--- Output:
--- "SSdtIGtpbGxpbmcgeW91ciBicmFpbiBsaWtlIGEgcG9pc29ub3VzIG11c2hyb29t"
--- "TQ=="
--- "TWE="
--- "TWFu"
-
--- Compare to Octave tests:
--- assert(strcmp(bytes2base64(uint8([77])), 'TQ=='));
--- assert(strcmp(bytes2base64(uint8([77 97])), 'TWE='));
--- assert(strcmp(bytes2base64(uint8([77 97 110])), 'TWFu'));
 ~~~
-This works. Ain’t pretty. But I 🐷 it.
+So. It works. Ain’t pretty. But I 🐷 it.
 
 ### Rust
 I’ve switched to [`rustup`](https://rustup.rs/). First, run `rustup install nightly`, then use `nightly` to build and run: `rustup run nightly cargo build && rustup run nightly cargo run`. This is so that I can use [slice patterns](https://doc.rust-lang.org/beta/book/slice-patterns.html).
@@ -297,7 +297,9 @@ import Data.Bits
 import qualified Data.ByteString as B
 
 xorWord8s = zipWith xor
-
+~~~
+Behold, the shortest implementation. Thanks to pair programming 💚. And type hints/linter 💖. It works:
+~~~haskell
 string1 = "1c0111001f010100061a024b53535009181c"
 string2 = "686974207468652062756c6c277320657965"
 expected = "746865206b696420646f6e277420706c6179"
@@ -306,7 +308,6 @@ hexStringToInts expected == xorWord8s
   (hexStringToInts string2)
 B.pack . hexStringToInts $ expected
 ~~~
-Behold, the shortest implementation. Thanks to pair programming 💚. And type hints/linter 💖.
 
 ## Set 1, Challenge 3
 
@@ -319,9 +320,10 @@ message = "1b37373331363f78151b7f2b783431333d78397828372d363c78373e783a393b3736"
 xorAll key = B.map (xor key)
 decode key = xorAll key . B.pack . hexStringToInts $ message
 score key = (decode key =~ "[a-zA-Z0-9 ]" :: Int) - (decode key =~ "[^a-zA-Z0-9 ]" :: Int)
-
+~~~
+I’m noticing a trend here: in Haskell, the core implementations are about as long as the testing code 😙:
+~~~haskell
 take 5 . sortOn (\(_,x,_) -> -1*x) $ zip3 [0..127] (map score [0..127]) (map decode [0..127])
--- Looks like key 88 = 0x58 is the key!
 ~~~
 A little bit messy, but that was fun!
 
