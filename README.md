@@ -2,6 +2,25 @@
 
 (See also my [Rosetta Euler](https://github.com/fasiha/rosetta-euler), which is in a similar format, solving Project Euler problems.)
 
+<!-- TOC depthFrom:1 depthTo:6 withLinks:1 updateOnSave:1 orderedList:0 -->
+
+- [[Cryptopals Crypto Challenge](https://cryptopals.com/)](#cryptopals-crypto-challengehttpscryptopalscom)
+	- [Prelude: stringy hex⟹bytes⟹raw binary file](#prelude-stringy-hexbytesraw-binary-file)
+		- [Octave/Matlab](#octavematlab)
+		- [Haskell](#haskell)
+		- [Rust](#rust)
+	- [Bytes⟹Base64](#bytesbase64)
+		- [Octave](#octave)
+		- [Haskell](#haskell)
+		- [Rust](#rust)
+- [![feature(advanced_slice_patterns, slice_patterns)]](#featureadvancedslicepatterns-slicepatterns)
+	- [[Set 1, Challenge 2](https://cryptopals.com/sets/1/challenges/2)](#set-1-challenge-2httpscryptopalscomsets1challenges2)
+		- [Haskell](#haskell)
+	- [Set 1, Challenge 3](#set-1-challenge-3)
+		- [Haskell](#haskell)
+
+<!-- /TOC -->
+
 ## Prelude: stringy hex⟹bytes⟹raw binary file
 
 A prelude to [set 1→challenge 1](https://cryptopals.com/sets/1/challenges/1).
