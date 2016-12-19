@@ -26,14 +26,46 @@ fn encode(bytes: Vec<u8>) -> String {
     println!("{} bytes, {} outputs", bytes.len(), out.len());
     for i in 0..out.len() / 4 {
         let v = &bytes[i * 3..cmp::min(bytes.len(), i * 3 + 3)];
-        let a = v[0] >> 2;
-        let b = ((v[0] & 0b_0000_0011) << 4) + (v[1] >> 4);
-        let c = ((v[1] & 0b_0000_1111) << 2) + (v[2] >> 6);
-        let d = v[2] & 0b_0011_1111;
+        let mut a0 = 0;
+        let mut b0 = 0;
+        let mut c0 = 0;
+        let mut nequals = 0;
+        match v {
+            &[x, y, z] => {
+                a0 = x;
+                b0 = y;
+                c0 = z;
+            }
+            &[x, y] => {
+                a0 = x;
+                b0 = y;
+                c0 = 0;
+                nequals = 1;
+            }
+            &[x] => {
+                a0 = x;
+                b0 = 0;
+                c0 = 0;
+                nequals = 2;
+            }
+            _ => {}
+        }
+        let a = a0 >> 2;
+        let b = ((a0 & 0b_0000_0011) << 4) + (b0 >> 4);
+        let c = ((b0 & 0b_0000_1111) << 2) + (c0 >> 6);
+        let d = c0 & 0b_0011_1111;
         out[i * 4] = lut[a as usize];
         out[i * 4 + 1] = lut[b as usize];
-        out[i * 4 + 2] = lut[c as usize];
-        out[i * 4 + 3] = lut[d as usize];
+        out[i * 4 + 2] = if nequals >= 2 {
+            '=' as u8
+        } else {
+            lut[c as usize]
+        };
+        out[i * 4 + 3] = if nequals >= 1 {
+            '=' as u8
+        } else {
+            lut[d as usize]
+        };
     }
     println!("{:?}", str::from_utf8(out.as_slice()).unwrap());
     str::from_utf8(out.as_slice()).unwrap().to_string()
