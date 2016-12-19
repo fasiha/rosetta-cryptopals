@@ -20,54 +20,44 @@ fn bytes2file(fname: &str, v: &[u8]) -> std::io::Result<usize> {
     buffer.write(v)
 }
 
-fn encode(bytes: Vec<u8>) -> String {
+fn triplet2quad(a0: u8, b0: u8, c0: u8) -> Vec<u8> {
     let lut = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789".as_bytes();
+    let a = a0 >> 2;
+    let b = ((a0 & 0b_0000_0011) << 4) + (b0 >> 4);
+    let c = ((b0 & 0b_0000_1111) << 2) + (c0 >> 6);
+    let d = c0 & 0b_0011_1111;
+    vec![lut[a as usize], lut[b as usize], lut[c as usize], lut[d as usize]]
+}
+
+fn encode(bytes: Vec<u8>) -> String {
     let mut out: Vec<u8> = vec!['=' as u8; 4 * ((2 + bytes.len()) / 3)];
-    println!("{} bytes, {} outputs", bytes.len(), out.len());
     for i in 0..out.len() / 4 {
         let v = &bytes[i * 3..cmp::min(bytes.len(), i * 3 + 3)];
-        let mut a0 = 0;
-        let mut b0 = 0;
-        let mut c0 = 0;
-        let mut nequals = 0;
         match v {
             &[x, y, z] => {
-                a0 = x;
-                b0 = y;
-                c0 = z;
+                let quad = triplet2quad(x, y, z);
+                out[i * 4] = quad[0];
+                out[i * 4 + 1] = quad[1];
+                out[i * 4 + 2] = quad[2];
+                out[i * 4 + 3] = quad[3];
             }
             &[x, y] => {
-                a0 = x;
-                b0 = y;
-                c0 = 0;
-                nequals = 1;
+                let quad = triplet2quad(x, y, 0);
+                out[i * 4] = quad[0];
+                out[i * 4 + 1] = quad[1];
+                out[i * 4 + 2] = quad[2];
+                out[i * 4 + 3] = '=' as u8;
             }
             &[x] => {
-                a0 = x;
-                b0 = 0;
-                c0 = 0;
-                nequals = 2;
+                let quad = triplet2quad(x, 0, 0);
+                out[i * 4] = quad[0];
+                out[i * 4 + 1] = quad[1];
+                out[i * 4 + 2] = '=' as u8;
+                out[i * 4 + 3] = '=' as u8;
             }
             _ => {}
         }
-        let a = a0 >> 2;
-        let b = ((a0 & 0b_0000_0011) << 4) + (b0 >> 4);
-        let c = ((b0 & 0b_0000_1111) << 2) + (c0 >> 6);
-        let d = c0 & 0b_0011_1111;
-        out[i * 4] = lut[a as usize];
-        out[i * 4 + 1] = lut[b as usize];
-        out[i * 4 + 2] = if nequals >= 2 {
-            '=' as u8
-        } else {
-            lut[c as usize]
-        };
-        out[i * 4 + 3] = if nequals >= 1 {
-            '=' as u8
-        } else {
-            lut[d as usize]
-        };
     }
-    println!("{:?}", str::from_utf8(out.as_slice()).unwrap());
     str::from_utf8(out.as_slice()).unwrap().to_string()
 }
 
@@ -76,10 +66,8 @@ fn main() {
              368726f6f6d";
     bytes2file("crust.bin", hex2bytes(s).as_slice()).unwrap();
 
-
-    let bytes2 = hex2bytes(s);
-    let bytes: Vec<u8> = vec![77u8, 97];// , 110u8
-    encode(bytes2);
-    encode(bytes);
-
+    println!("{}", encode(hex2bytes(s)));
+    println!("{}", encode(vec![77u8]));
+    println!("{}", encode(vec![77u8, 97]));
+    println!("{}", encode(vec![77u8, 97, 110]));
 }
