@@ -1,4 +1,4 @@
-#![feature(advanced_slice_patterns, slice_patterns)]
+#![feature(slice_patterns)]
 
 use std::str;
 use std::cmp;
