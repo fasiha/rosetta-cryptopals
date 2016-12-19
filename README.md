@@ -166,7 +166,8 @@ assert(strcmp(bytes2base64(uint8([77 97 110])), 'TWFu'));
 
 ~~~
 Finally, evaluate the solution:
-~~~% Solution
+~~~octave
+% Solution
 assert(strcmp(bytes2base64(hex2bytes(s)), ...
               'SSdtIGtpbGxpbmcgeW91ciBicmFpbiBsaWtlIGEgcG9pc29ub3VzIG11c2hyb29t'));
 disp(bytes2base64(hex2bytes(s)));
