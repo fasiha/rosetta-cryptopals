@@ -16,7 +16,7 @@ pub fn encode(bytes: Vec<u8>) -> String {
     let mut out: Vec<u8> = vec!['=' as u8; 4 * ((2 + bytes.len()) / 3)];
     for i in 0..out.len() / 4 {
         let v = &bytes[i * 3..cmp::min(bytes.len(), i * 3 + 3)];
-        match v {
+        match v { // [👒]
             &[x, y, z] => {
                 &out[i * 4..i * 4 + 4].copy_from_slice(&triplet2quad(x, y, z));
             }
