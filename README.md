@@ -258,21 +258,21 @@ pub fn encode(bytes: Vec<u8>) -> String {
         match v {
             &[x, y, z] => {
                 let quad = triplet2quad(x, y, z);
-                out[i * 4] = quad[0];
-                out[i * 4 + 1] = quad[1];
-                out[i * 4 + 2] = quad[2];
-                out[i * 4 + 3] = quad[3];
+                for j in 0..4 {
+                    out[i * 4 + j] = quad[0 + j];
+                }
             }
             &[x, y] => {
                 let quad = triplet2quad(x, y, 0);
-                out[i * 4] = quad[0];
-                out[i * 4 + 1] = quad[1];
-                out[i * 4 + 2] = quad[2];
+                for j in 0..3 {
+                    out[i * 4 + j] = quad[0 + j];
+                }
             }
             &[x] => {
                 let quad = triplet2quad(x, 0, 0);
-                out[i * 4] = quad[0];
-                out[i * 4 + 1] = quad[1];
+                for j in 0..2 {
+                    out[i * 4 + j] = quad[0 + j];
+                }
             }
             _ => {}
         }
