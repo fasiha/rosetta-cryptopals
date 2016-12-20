@@ -314,19 +314,66 @@ B.pack . hexStringToInts $ expected
 
 ### Haskell
 ~~~haskell
+import qualified Data.ByteString as B
+import qualified Data.ByteString.Char8 as C
 import Text.Regex.Posix
+import Data.Char
 
 message = "1b37373331363f78151b7f2b783431333d78397828372d363c78373e783a393b3736"
 
 xorAll key = B.map (xor key)
 decode key = xorAll key . B.pack . hexStringToInts $ message
-score key = (decode key =~ "[a-zA-Z0-9 ]" :: Int) - (decode key =~ "[^a-zA-Z0-9 ]" :: Int)
+
+-- All alphabets
+score :: B.ByteString->Int
+score s = (s =~ "[a-zA-Z ]" :: Int)
+
+-- Use frequencies!
+matchUpperLower lowUp item =
+  elem item . sequence [toUpper, toLower] $ lowUp
+
+histogram :: [Char] -> B.ByteString -> [(Char, Int)]
+histogram charRange input =
+  [ (x,c) | x <- charRange,
+            let c = length . filter (matchUpperLower x) . C.unpack $ input]
+
+-- Via http://stackoverflow.com/a/16192050/500207
+mapInd :: (a -> Int -> b) -> [a] -> [b]
+mapInd f l = zipWith f l [0..]
+
+allRelativeScore = sum . mapInd (\(_,freq) ind->freq*(26 - ind)) . histogram " ETAONRISHDLFCMUGYPWBVKJXQZ"
 ~~~
-I’m noticing a trend here: in Haskell, the core implementations are only slightly longer than testing code 😙:
+Wikipedia has a nice table of relative frequencies of letters in English, including space [(Wikipedia.org)](https://en.wikipedia.org/wiki/Letter_frequency#Relative_frequencies_of_letters_in_the_English_language) and we can improve our English scorer by using it. Note that the gap between this `allRelativeScore` and the naive any-alphabet scorer is much higher.
 ~~~haskell
-take 5 . sortOn (\(_,x,_) -> -1*x) $ zip3 [0..127] (map score [0..127]) (map decode [0..127])
+allRelativeScore $ C.pack "qwzxy" -- 19 😪
+allRelativeScore $ C.pack "aeiou" -- 100 😮
+
+evaluateScorer score = take 5 . sortOn (\(x,_,_) -> negate x) . map (\n -> let
+    str = decode n
+    sco = score str
+  in (sco, str, n)) $ [0..127]
+
+evaluateScorer allRelativeScore
+evaluateScorer score
+
+import Text.Printf
+import Data.Char ( isPrint )
+tupleToCSV (sco, str, num) =
+  printf "| %d | %d | %s |" num sco (map (\c->if isPrint c then c else '*')
+ . C.unpack $ str)
+putStrLn . intercalate "\n" . map tupleToCSV $ evaluateScorer allRelativeScore
 ~~~
-A little bit messy, but that was fun!
+Here’s the most English-like results:
+
+| key | score | decoded string |
+|-----|-------|----------------|
+| 88 | 595 | Cooking MC's like a pound of bacon |
+| 95 | 441 | Dhhlni`'JD t'knlb'f'whric'ha'efdhi |
+| 120 | 439 | cOOKING*mc*S*LIKE*A*POUND*OF*BACON |
+| 82 | 430 | Ieeacdm*GI-y*fcao*k*ze*dn*el*hkied |
+| 114 | 430 | iEEACDM*gi*Y*FCAO*K*ZE_DN*EL*HKIED |
+
+I’m noticing a trend here: in Haskell, the core implementations are very, very short 😙!
 
 Note: for the above to work, I needed to do the following:
 
