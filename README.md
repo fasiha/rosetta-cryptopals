@@ -257,22 +257,13 @@ pub fn encode(bytes: Vec<u8>) -> String {
         let v = &bytes[i * 3..cmp::min(bytes.len(), i * 3 + 3)];
         match v {
             &[x, y, z] => {
-                let quad = triplet2quad(x, y, z);
-                for j in 0..4 {
-                    out[i * 4 + j] = quad[0 + j];
-                }
+                &mut out[i * 4..i * 4 + 4].copy_from_slice(&triplet2quad(x, y, z));
             }
             &[x, y] => {
-                let quad = triplet2quad(x, y, 0);
-                for j in 0..3 {
-                    out[i * 4 + j] = quad[0 + j];
-                }
+                &mut out[i * 4..i * 4 + 3].copy_from_slice(&triplet2quad(x, y, 0)[..3]);
             }
             &[x] => {
-                let quad = triplet2quad(x, 0, 0);
-                for j in 0..2 {
-                    out[i * 4 + j] = quad[0 + j];
-                }
+                &mut out[i * 4..i * 4 + 2].copy_from_slice(&triplet2quad(x, 0, 0)[..2]);
             }
             _ => {}
         }
