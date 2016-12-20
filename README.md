@@ -359,8 +359,7 @@ evaluateScorer score
 import Text.Printf
 import Data.Char ( isPrint )
 tupleToCSV (sco, str, num) =
-  printf "| %d | %d | %s |" num sco (map (\c->if isPrint c then c else '.')
- . C.unpack $ str)
+  printf "| %d | %d | %s |" num sco (map (\c->if isPrint c then c else '.') . C.unpack $ str)
  putStrLn . intercalate "\n" . map tupleToCSV $ evaluateScorer allRelativeScore
  putStrLn . intercalate "\n" . map tupleToCSV $ evaluateScorer score
 ~~~
