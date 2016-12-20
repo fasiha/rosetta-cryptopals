@@ -341,7 +341,8 @@ histogram charRange input =
 mapInd :: (a -> Int -> b) -> [a] -> [b]
 mapInd f l = zipWith f l [0..]
 
-allRelativeScore = sum . mapInd (\(_,freq) ind->freq*(26 - ind)) . histogram " ETAONRISHDLFCMUGYPWBVKJXQZ"
+englishLetters = " ETAONRISHDLFCMUGYPWBVKJXQZ"
+allRelativeScore = sum . mapInd (\(_, freq) ind -> freq * (26 - ind)) . histogram englishLetters
 ~~~
 Wikipedia has a nice table of relative frequencies of letters in English, including space [(Wikipedia.org)](https://en.wikipedia.org/wiki/Letter_frequency#Relative_frequencies_of_letters_in_the_English_language) and we can improve our English scorer by using it. Note that the gap between this `allRelativeScore` and the naive any-alphabet scorer is much higher.
 ~~~haskell
