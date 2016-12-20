@@ -359,19 +359,30 @@ evaluateScorer score
 import Text.Printf
 import Data.Char ( isPrint )
 tupleToCSV (sco, str, num) =
-  printf "| %d | %d | %s |" num sco (map (\c->if isPrint c then c else '*')
+  printf "| %d | %d | %s |" num sco (map (\c->if isPrint c then c else '.')
  . C.unpack $ str)
-putStrLn . intercalate "\n" . map tupleToCSV $ evaluateScorer allRelativeScore
+ putStrLn . intercalate "\n" . map tupleToCSV $ evaluateScorer allRelativeScore
+ putStrLn . intercalate "\n" . map tupleToCSV $ evaluateScorer score
 ~~~
-Here’s the most English-like results:
+Here’re the five most English-like results using the frequency-based scoring:
 
 | key | score | decoded string |
 |-----|-------|----------------|
 | 88 | 595 | Cooking MC's like a pound of bacon |
 | 95 | 441 | Dhhlni`'JD t'knlb'f'whric'ha'efdhi |
-| 120 | 439 | cOOKING*mc*S*LIKE*A*POUND*OF*BACON |
-| 82 | 430 | Ieeacdm*GI-y*fcao*k*ze*dn*el*hkied |
-| 114 | 430 | iEEACDM*gi*Y*FCAO*K*ZE_DN*EL*HKIED |
+| 120 | 439 | cOOKING.mc.S.LIKE.A.POUND.OF.BACON |
+| 82 | 430 | Ieeacdm*GI-y*fcao*k*ze.dn*el*hkied |
+| 114 | 430 | iEEACDM.gi.Y.FCAO.K.ZE_DN.EL.HKIED |
+
+Compare this to the alphabetic scorer:
+
+| key | score | decoded string |
+|-----|-------|----------------|
+| 88 | 33 | Cooking MC's like a pound of bacon |
+| 95 | 27 | Dhhlni`'JD t'knlb'f'whric'ha'efdhi |
+| 82 | 26 | Ieeacdm*GI-y*fcao*k*ze.dn*el*hkied |
+| 90 | 26 | Ammikle"OA%q"nkig"c"rmwlf"md"`caml |
+| 92 | 26 | Gkkomjc$IG#w$hmoa$e$tkqj`$kb$fegkj |
 
 I’m noticing a trend here: in Haskell, the core implementations are very, very short 😙!
 
