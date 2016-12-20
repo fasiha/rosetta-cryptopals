@@ -257,13 +257,13 @@ pub fn encode(bytes: Vec<u8>) -> String {
         let v = &bytes[i * 3..cmp::min(bytes.len(), i * 3 + 3)];
         match v {
             &[x, y, z] => {
-                &mut out[i * 4..i * 4 + 4].copy_from_slice(&triplet2quad(x, y, z));
+                &out[i * 4..i * 4 + 4].copy_from_slice(&triplet2quad(x, y, z));
             }
             &[x, y] => {
-                &mut out[i * 4..i * 4 + 3].copy_from_slice(&triplet2quad(x, y, 0)[..3]);
+                &out[i * 4..i * 4 + 3].copy_from_slice(&triplet2quad(x, y, 0)[..3]);
             }
             &[x] => {
-                &mut out[i * 4..i * 4 + 2].copy_from_slice(&triplet2quad(x, 0, 0)[..2]);
+                &out[i * 4..i * 4 + 2].copy_from_slice(&triplet2quad(x, 0, 0)[..2]);
             }
             _ => {}
         }
@@ -285,6 +285,8 @@ pub fn demo() {
     ()
 }
 ~~~
+Note how the pattern match above, in `encode()` is very similar to Haskell’s in `intsToBase64` above. That is *really* special!
+
 To use this, `cryptobasics/src/lib.rs` needs to be:
 ~~~rust
 // included: cryptobasics/src/lib.rs
