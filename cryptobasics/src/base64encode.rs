@@ -1,18 +1,8 @@
-#![feature(slice_patterns)]
-
-use std::str;
 use std::cmp;
-
-fn hex2bytes(s: &str) -> Vec<u8> {
-    let mut v: Vec<u8> = vec![0; s.len() / 2];
-    for i in 0..s.len() / 2 {
-        let sub = &s[i * 2..i * 2 + 2];
-        v[i] = u8::from_str_radix(sub, 16).unwrap();
-    }
-    v
-}
+use std::str;
 
 // FIXME: Not ideal that this returns a heap-allocated vector.
+// Consider https://docs.rs/arrayvec/*/arrayvec/struct.ArrayVec.html
 fn triplet2quad(a0: u8, b0: u8, c0: u8) -> Vec<u8> {
     let lut = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789".as_bytes();
     let a = a0 >> 2;
@@ -22,7 +12,7 @@ fn triplet2quad(a0: u8, b0: u8, c0: u8) -> Vec<u8> {
     vec![lut[a as usize], lut[b as usize], lut[c as usize], lut[d as usize]]
 }
 
-fn encode(bytes: Vec<u8>) -> String {
+pub fn encode(bytes: Vec<u8>) -> String {
     let mut out: Vec<u8> = vec!['=' as u8; 4 * ((2 + bytes.len()) / 3)];
     for i in 0..out.len() / 4 {
         let v = &bytes[i * 3..cmp::min(bytes.len(), i * 3 + 3)];
@@ -51,13 +41,16 @@ fn encode(bytes: Vec<u8>) -> String {
     str::from_utf8(out.as_slice()).unwrap().to_string()
 }
 
-fn main() {
+pub fn demo() {
+    use hex2bytes;
+
     let s = "49276d206b696c6c696e6720796f757220627261696e206c696b65206120706f69736f6e6f7573206d757\
              368726f6f6d";
-    println!("{}", encode(hex2bytes(s)));
-    println!("{}", encode(vec![77u8]));
-    println!("{}", encode(vec![77u8, 97]));
-    println!("{}", encode(vec![77u8, 97, 110]));
+    assert_eq!(encode(vec![77u8, 97, 110]), "TWFu");
+    assert_eq!(encode(vec![77u8, 97]), "TWE=");
+    assert_eq!(encode(vec![77u8]), "TQ==");
+    assert_eq!(encode(hex2bytes::hex2bytes(s)),
+               "SSdtIGtpbGxpbmcgeW91ciBicmFpbiBsaWtlIGEgcG9pc29ub3VzIG11c2hyb29t");
+    println!("base64encode demo passed!");
+    ()
 }
-
-// rustup run nightly cargo build && rustup run nightly cargo run

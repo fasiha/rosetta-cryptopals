@@ -1,5 +1,5 @@
 [package]
-name = "hex2base64"
+name = "cryptobasics"
 version = "0.1.0"
 authors = ["Ahmed Fasih <wuzzyview@gmail.com>"]
 

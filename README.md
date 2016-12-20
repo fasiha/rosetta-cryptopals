@@ -97,9 +97,10 @@ Interestingly enough, Haskell (IHaskell in Atom via Hydrogen and Jupyter) prints
 ### Rust
 My first non-trivial Rust adventure!
 ~~~rust
-// included: hex2bytes/src/main.rs
+// included: cryptobasics/src/hex2bytes.rs
+use std::str;
 
-fn hex2bytes(s: &str) -> Vec<u8> {
+pub fn hex2bytes(s: &str) -> Vec<u8> {
     let mut v: Vec<u8> = vec![0; s.len() / 2];
     for i in 0..s.len() / 2 {
         let sub = &s[i * 2..i * 2 + 2];
@@ -108,7 +109,7 @@ fn hex2bytes(s: &str) -> Vec<u8> {
     v
 }
 
-fn bytes2file(fname: &str, v: &[u8]) -> std::io::Result<usize> {
+pub fn bytes2file(fname: &str, v: &[u8]) -> ::std::io::Result<usize> {
     use std::io::prelude::*;
     use std::fs::File;
 
@@ -116,14 +117,31 @@ fn bytes2file(fname: &str, v: &[u8]) -> std::io::Result<usize> {
     buffer.write(v)
 }
 
-fn main() {
-    println!("Hello, world!");
+pub fn demo() {
     let s = "49276d206b696c6c696e6720796f757220627261696e206c696b65206120706f69736f6e6f7573206d757\
              368726f6f6d";
-    bytes2file("crust.bin", hex2bytes(s).as_slice()).unwrap();
+    assert_eq!(String::from_utf8_lossy(&hex2bytes(s)),
+               "I'm killing your brain like a poisonous mushroom");
+    bytes2file("crust.bin", &hex2bytes(s)).unwrap();
+    println!("hex2bytes demo passed! Check crust.bin.");
+    ()
 }
 ~~~
-With `cargo build && cargo run`, `crust.bin` is created in the `hex2bytes` directory, with the same contents as the above Octave and Haskell implementations. I am sure I’m not doing error handing with `Result` properly (`try!()` and the two `unwrap()`s)—please enlighten me!
+This `hex2bytes.rs` is a free-standing Rust module, inside the `cryptobasics` crate (included in this repo). With an appropriate `lib.rs`:
+~~~rust
+// included: cryptobasics/src/lib.rs
+pub mod hex2bytes;
+~~~
+and a `main.rs` like this:
+~~~rust
+// included: cryptobasics/src/main.rs
+extern crate cryptobasics;
+
+fn main() {
+    cryptobasics::hex2bytes::demo();
+}
+~~~
+you can run `cargo build && cargo run` inside the `cryptobasics` directory. `hex2bytes::demo()` will create `crust.bin`, with the same contents as the above Octave and Haskell implementations. I am sure I’m not doing error handing with `Result` properly (`try!()` and `unwrap()`)—please enlighten me!
 
 ## Bytes⟹Base64
 
@@ -213,25 +231,17 @@ intsToBase64 ([77, 97, 110] :: [Word8])
 So. It works. Ain’t pretty. But I 🐷 it.
 
 ### Rust
-I’ve switched to [`rustup`](https://rustup.rs/). First, run `rustup install nightly`, then use `nightly` to build and run: `rustup run nightly cargo build && rustup run nightly cargo run`. This is so that I can use [slice patterns](https://doc.rust-lang.org/beta/book/slice-patterns.html).
+I’ve switched to [`rustup`](https://rustup.rs/). First, install `rustup` and run `rustup install nightly`, then use `nightly` to build and run: `rustup run nightly cargo build && rustup run nightly cargo run`. This is so that I can use [slice patterns](https://doc.rust-lang.org/beta/book/slice-patterns.html).
+
+I created a new Rust module for this challenge: it lives at `cryptobasics/src/base64encode.rs` and its `demo()` function at the bottom uses the `hex2bytes` module introduced previously.
 
 ~~~rust
-// included: hex2base64/src/main.rs
-// NEEDED! Commented for Markdown TOC // #![feature(slice_patterns)]
-
-use std::str;
+// included: cryptobasics/src/base64encode.rs
 use std::cmp;
-
-fn hex2bytes(s: &str) -> Vec<u8> {
-    let mut v: Vec<u8> = vec![0; s.len() / 2];
-    for i in 0..s.len() / 2 {
-        let sub = &s[i * 2..i * 2 + 2];
-        v[i] = u8::from_str_radix(sub, 16).unwrap();
-    }
-    v
-}
+use std::str;
 
 // FIXME: Not ideal that this returns a heap-allocated vector.
+// Consider https://docs.rs/arrayvec/*/arrayvec/struct.ArrayVec.html
 fn triplet2quad(a0: u8, b0: u8, c0: u8) -> Vec<u8> {
     let lut = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789".as_bytes();
     let a = a0 >> 2;
@@ -241,7 +251,7 @@ fn triplet2quad(a0: u8, b0: u8, c0: u8) -> Vec<u8> {
     vec![lut[a as usize], lut[b as usize], lut[c as usize], lut[d as usize]]
 }
 
-fn encode(bytes: Vec<u8>) -> String {
+pub fn encode(bytes: Vec<u8>) -> String {
     let mut out: Vec<u8> = vec!['=' as u8; 4 * ((2 + bytes.len()) / 3)];
     for i in 0..out.len() / 4 {
         let v = &bytes[i * 3..cmp::min(bytes.len(), i * 3 + 3)];
@@ -270,16 +280,36 @@ fn encode(bytes: Vec<u8>) -> String {
     str::from_utf8(out.as_slice()).unwrap().to_string()
 }
 
-fn main() {
+pub fn demo() {
+    use hex2bytes;
+
     let s = "49276d206b696c6c696e6720796f757220627261696e206c696b65206120706f69736f6e6f7573206d757\
              368726f6f6d";
-    println!("{}", encode(hex2bytes(s)));
-    println!("{}", encode(vec![77u8]));
-    println!("{}", encode(vec![77u8, 97]));
-    println!("{}", encode(vec![77u8, 97, 110]));
+    assert_eq!(encode(vec![77u8, 97, 110]), "TWFu");
+    assert_eq!(encode(vec![77u8, 97]), "TWE=");
+    assert_eq!(encode(vec![77u8]), "TQ==");
+    assert_eq!(encode(hex2bytes::hex2bytes(s)),
+               "SSdtIGtpbGxpbmcgeW91ciBicmFpbiBsaWtlIGEgcG9pc29ub3VzIG11c2hyb29t");
+    println!("base64encode demo passed!");
+    ()
 }
 ~~~
-
+To use this, `cryptobasics/src/lib.rs` needs to be:
+~~~rust
+// included: cryptobasics/src/lib.rs
+#![feature(slice_patterns)]
+pub mod hex2bytes;
+pub mod base64encode;
+~~~
+With this in place, `main.rs` can be:
+~~~rust
+// included: cryptobasics/src/main.rs
+extern crate cryptobasics;
+fn main() {
+    cryptobasics::hex2bytes::demo();
+    cryptobasics::base64encode::demo();
+}
+~~~
 For sure this is suboptimal in many ways, but I wanted to record here that this nicely balances the functional/expressions-only style of programming with the “dirty” imperative style, per [“Mixing matching, mutation, and moves in Rust”](https://blog.rust-lang.org/2015/04/17/Enums-match-mutation-and-moves.html):
 
 > `match` embraces both imperative and functional styles of programming: you can continue using `break` statements, assignments, et cetera, rather than being forced to adopt an expression-oriented mindset.
