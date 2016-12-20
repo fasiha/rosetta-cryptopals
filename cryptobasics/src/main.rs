@@ -4,6 +4,7 @@ use std::str;
 fn main() {
     cryptobasics::hex2bytes::demo();
     cryptobasics::base64encode::demo();
+    cryptobasics::fixedxor::demo();
 
     // Extra testing code.
     let s = "49276d206b696c6c696e6720796f757220627261696e206c696b65206120706f69736f6e6f7573206d757368726f6f6d";

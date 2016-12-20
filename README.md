@@ -16,6 +16,7 @@ My literate-programming-style document of solving the [Cryptopals Crypto Challen
     - [Rust](#rust-1)
   - [Set 1, Challenge 2](#set-1-challenge-2)
     - [Haskell](#haskell-2)
+    - [Rust](#rust-2)
   - [Set 1, Challenge 3](#set-1-challenge-3)
     - [Haskell](#haskell-3)
   - [Challenge 4: Detect single-character XOR](#challenge-4-detect-single-character-xor)
@@ -334,6 +335,31 @@ hexStringToInts expected == xorWord8s
   (hexStringToInts string2)
 B.pack . hexStringToInts $ expected
 ~~~
+
+### Rust
+The Rust implementation is also quite short! Just the first function above, `combine()`. (The demo/test function `demo()` is below that.) This is a new module, `cryptobasics/src/fixedxor.rs`:
+~~~rust
+// included: cryptobasics/src/fixedxor.rs
+pub fn combine(x: &[u8], y: &[u8]) -> Vec<u8> {
+    x.iter().zip(y.iter()).map(|(&l, &r)| l ^ r).collect()
+}
+
+pub fn demo() {
+    let this = "1c0111001f010100061a024b53535009181c";
+    let that = "686974207468652062756c6c277320657965";
+    let expected = "746865206b696420646f6e277420706c6179";
+
+    use hex2bytes;
+    assert_eq!(String::from_utf8_lossy(&combine(&hex2bytes::hex2bytes(this),
+                                                &hex2bytes::hex2bytes(that))),
+               String::from_utf8_lossy(&hex2bytes::hex2bytes(expected)));
+    println!("fixedxor demo passed!");
+    ()
+}
+~~~
+Append `pub mod fixedxor;` to `cryptobasics/src/lib.rs` so the crate knows about this new module, and add `cryptobasics::fixedxor::demo();` to the `main()` function in `cryptobasics/src/main.rs` to exercise the demo. (I’m omitting the details because they follow the two Rust examples above very closely. This Rust crate is included in this repository, so refer to that for complete details!)
+
+So, the Haskell implementation above is magically short thanks to `zipWith :: forall a b c. (a -> b -> c) -> [a] -> [b] -> [c]`. I actually wrote something very similar to the Rust code for Haskell, before helpful Haskell told me to use `zipWith`… Rust could readily have something as flexible as `zipWith` since it clearly can express the same ideas. It’s increasingly surprising how I can achieve highly functional code with a systems language intended to displace C/C++.
 
 ## Set 1, Challenge 3
 
