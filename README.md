@@ -18,6 +18,8 @@ My literate-programming-style document of solving the [Cryptopals Crypto Challen
     - [Haskell](#haskell-2)
   - [Set 1, Challenge 3](#set-1-challenge-3)
     - [Haskell](#haskell-3)
+  - [Challenge 4: Detect single-character XOR](#challenge-4-detect-single-character-xor)
+    - [Haskell](#haskell-4)
 
 <!-- TOC END -->
 
@@ -391,3 +393,33 @@ Note: for the above to work, I needed to do the following:
 - Register IHaskell with Jupyter, to be aware of Stack: `ihaskell install --stack`.
 - Install `regex-posix`: `stack install regex-posix`.
 - Finally, edit `~/.stack/global-project/stack.yaml` to list the following: `resolver: lts-6.2` instead of another `resolver`. There are newer resolvers, but this is the one from IHaskell. Without this, Atom/Hydrogen will instantiate a IHaskell Jupyter session using whatever `resolver` is listed in `~/.stack/global-project/stack.yaml` which did *not* work if I registered IHaskell with Jupyter *with* Stack.
+
+## Challenge 4: Detect single-character XOR
+There’s this file, `4.txt`, at page for [set 1, challenge 4](https://cryptopals.com/sets/1/challenges/4).
+
+### Haskell
+~~~haskell
+import Data.String
+
+decodeString :: String -> Word8 -> B.ByteString
+decodeString message key = xorAll key . B.pack . hexStringToInts $ message
+
+mostEnglishy = head . sortOn (negate . allRelativeScore . snd) . zip [0..]
+
+mostEnglishy2 = head . sortOn (negate . allRelativeScore . snd . snd) . zip [0..]
+
+bestMessage = mostEnglishy2 . map (\msg -> mostEnglishy $ map (decodeString msg) [0..127])
+~~~
+A big to-do: how to combine `mostEnglishy` and `mostEnglishy2`?
+
+With this in place, it’s relatively straightforward to find the answer:
+~~~haskell
+do
+  src <- readFile "4.txt"
+  let strings = lines src
+  print (bestMessage strings)
+-- (170,(53,"Now that the party is jumping\n"))
+-- I.e., string 170 (0-indexed) with key 53:
+decodeString "7b5a4215415d544115415d5015455447414c155c46155f4058455c5b523f" 53
+~~~
+It’s actually a bit slow in IHaskell/Jupyter/Hydrogen/Atom, so I should try this in its own compiled binary.
