@@ -19,6 +19,7 @@ My literate-programming-style document of solving the [Cryptopals Crypto Challen
     - [Rust](#rust-2)
   - [Set 1, Challenge 3](#set-1-challenge-3)
     - [Haskell](#haskell-3)
+    - [Rust](#rust-3)
   - [Challenge 4: Detect single-character XOR](#challenge-4-detect-single-character-xor)
     - [Haskell](#haskell-4)
 
@@ -442,6 +443,45 @@ Note: for the above to work, I needed to do the following:
 - Register IHaskell with Jupyter, to be aware of Stack: `ihaskell install --stack`.
 - Install `regex-posix`: `stack install regex-posix`.
 - Finally, edit `~/.stack/global-project/stack.yaml` to list the following: `resolver: lts-6.2` instead of another `resolver`. There are newer resolvers, but this is the one from IHaskell. Without this, Atom/Hydrogen will instantiate a IHaskell Jupyter session using whatever `resolver` is listed in `~/.stack/global-project/stack.yaml` which did *not* work if I registered IHaskell with Jupyter *with* Stack.
+
+### Rust
+~~~rust
+// included: cryptobasics/src/crack_byte_xor.rs
+fn eng_core(c: u8) -> f32 {
+    let space_freq = 13f32;
+    let letter_freqs = vec![8.167, 1.492, 2.782, 4.253, 12.702, 2.228, 2.015, 6.094, 6.966, 0.153,
+                            0.772, 4.025, 2.406, 6.749, 7.507, 1.929, 0.095, 5.987, 6.327, 9.056,
+                            2.758, 0.978, 2.360, 0.150, 1.974, 0.074f32];
+    match c as char {
+        'A'...'Z' => letter_freqs[(c as usize) - ('A' as usize)],
+        'a'...'z' => letter_freqs[(c as usize) - ('a' as usize)],
+        ' ' => space_freq,
+        _ => 0.0,
+    }
+}
+
+pub fn crack(message: &[u8]) -> (u8, String) {
+    use std::str;
+
+    let bestkey: u8 = (0..128u8)
+        .max_by_key(|key| {
+            message.iter().map(|c| c ^ key).fold(0f32, |sum, c| sum + 100f32 * eng_core(c)) as isize
+        })
+        .unwrap();
+    let res: Vec<u8> = message.iter().map(|c| c ^ bestkey).collect();
+    let decoded = str::from_utf8(res.as_slice()).unwrap().to_string();
+    (bestkey, decoded)
+}
+
+pub fn demo() {
+    use hex2bytes;
+    let message = "1b37373331363f78151b7f2b783431333d78397828372d363c78373e783a393b3736";
+    assert_eq!((88u8, "Cooking MC's like a pound of bacon".to_string()),
+               crack(&hex2bytes::hex2bytes(message)));
+    println!("crack_byte_xor demo passed!");
+}
+~~~
+A simpler way to do letter frequency-based scoring: just use each character’s percentage as its score.
 
 ## Challenge 4: Detect single-character XOR
 There’s this file, `4.txt`, at page for [set 1, challenge 4](https://cryptopals.com/sets/1/challenges/4).
