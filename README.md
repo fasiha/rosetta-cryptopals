@@ -102,13 +102,24 @@ My first non-trivial Rust adventure!
 // included: cryptobasics/src/hex2bytes.rs
 use std::str;
 
-pub fn hex2bytes(s: &str) -> Vec<u8> {
-    let mut v: Vec<u8> = vec![0; s.len() / 2];
-    for i in 0..s.len() / 2 {
-        let sub = &s[i * 2..i * 2 + 2];
-        v[i] = u8::from_str_radix(sub, 16).unwrap();
+fn unhex(a: char) -> u8 {
+    match a {
+        '0'...'9' => (a as u8) - ('0' as u8),
+        'A'...'F' => (a as u8) - ('A' as u8) + 10,
+        'a'...'f' => (a as u8) - ('a' as u8) + 10,
+        _ => panic!("Invalid hex!"),
     }
-    v
+}
+
+fn parse_hex_hex(a: char, b: char) -> u8 {
+    unhex(a) * 16 + unhex(b)
+}
+
+pub fn hex2bytes(s: &str) -> Vec<u8> {
+    s.as_bytes()[..s.len() - s.len() % 2]
+        .chunks(2)
+        .map(|v: &[u8]| parse_hex_hex(v[0] as char, v[1] as char))
+        .collect()
 }
 
 pub fn bytes2file(fname: &str, v: &[u8]) -> ::std::io::Result<usize> {
