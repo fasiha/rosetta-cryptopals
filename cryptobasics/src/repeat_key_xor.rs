@@ -11,14 +11,16 @@ pub fn demo() {
 I go crazy when I hear a cymbal";
     let key = "ICE";
 
-    assert_eq!(bytestohex(&encode(text.as_bytes(), key.as_bytes())),
+    let encoded = encode(text.as_bytes(), key.as_bytes());
+
+    assert_eq!(bytestohex(&encoded),
                "0b3637272a2b2e63622c2e69692a23693a2a3c6324202d623d63343c2a26226324272765272\
 a282b2f20430a652e2c652a3124333a653e2b2027630c692b20283165286326302e27282f");
 
     // Just go the other way too!
     use hex2bytes::hex2bytes;
-    assert_eq!(hex2bytes("0b3637272a2b2e63622c2e69692a23693a2a3c6324202d623d63343c2a2622632\
-4272765272a282b2f20430a652e2c652a3124333a653e2b2027630c692b20283165286326302e27282f"),
-               encode(text.as_bytes(), key.as_bytes()));
+    assert_eq!(encoded,
+               hex2bytes("0b3637272a2b2e63622c2e69692a23693a2a3c6324202d623d63343c2a2622632\
+4272765272a282b2f20430a652e2c652a3124333a653e2b2027630c692b20283165286326302e27282f"));
     println!("repeat_key_xor demo passed!")
 }
