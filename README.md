@@ -562,7 +562,7 @@ pub fn demo() {
     //          str::from_utf8(&decode(&messages[lino], key)));
 }
 ~~~
-I haven’t been talking about it much because I’ve been having so much fun with Rust, but I have to talk about it—I’m having a ton of fun with Rust. Especially with Atom and `linter-rust` highlighting and displaying compiler errors instantly on every save, I’m getting a sense of the few circumstances a type annotation is needed, and of course using “type holes” ((Kris Jenkins)[http://blog.jenkster.com/2016/11/type-bombs-in-elm.html]). This problem and the last I was struggling with iterators, but that concept is coming together. (I still don’t know how to write a function that consumes a slice or an iterator. @stephaneyfx helped with https://is.gd/nZOWvh but that’s not ideal—StackOverflow fodder.)
+I haven’t been talking about it much because I’ve been having so much fun with Rust, but I have to talk about it—I’m having a ton of fun with Rust. Especially with Atom and `linter-rust` highlighting and displaying compiler errors instantly on every save, I’m getting a sense of the few circumstances a type annotation is needed, and of course using “type holes” ([Kris Jenkins](http://blog.jenkster.com/2016/11/type-bombs-in-elm.html)). This problem and the last I was struggling with iterators, but that concept is coming together. (I still don’t know how to write a function that consumes a slice or an iterator. @stephaneyfx helped with this: https://is.gd/nZOWvh but that’s far from ideal—StackOverflow fodder.)
 
 Now, observe the unfortunate loss of symmetry between the inner and outer maximizations that was so evident in the Haskell version above (with `mostEnglishy` and `mostEnglishy2`). I think both languages could benefit from writing a generic `argmax` function?
 
