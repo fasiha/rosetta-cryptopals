@@ -14,14 +14,15 @@ My literate-programming-style document of solving the [Cryptopals Crypto Challen
     - [Octave](#octave)
     - [Haskell](#haskell-1)
     - [Rust](#rust-1)
-  - [Set 1, Challenge 2](#set-1-challenge-2)
+  - [Set 1, Challenge 2: XOR two sequences](#set-1-challenge-2-xor-two-sequences)
     - [Haskell](#haskell-2)
     - [Rust](#rust-2)
-  - [Set 1, Challenge 3](#set-1-challenge-3)
+  - [Set 1, Challenge 3: crack a one-byte XOR cipher](#set-1-challenge-3-crack-a-one-byte-xor-cipher)
     - [Haskell](#haskell-3)
     - [Rust](#rust-3)
-  - [Challenge 4: Detect single-character XOR](#challenge-4-detect-single-character-xor)
+  - [Challenge 4: Detect single-byte-XOR-ciphered in a library](#challenge-4-detect-single-byte-xor-ciphered-in-a-library)
     - [Haskell](#haskell-4)
+    - [Rust](#rust-4)
 
 <!-- TOC END -->
 
@@ -320,7 +321,7 @@ For sure this is suboptimal in many ways, but I wanted to record here that this 
 
 (I say this notwithstanding John Carmack’s warning against “multi-paradigm”—if there’s an escape hatch allowed by the language, it will be used and abused in your codebase.)
 
-## Set 1, Challenge 2
+## Set 1, Challenge 2: XOR two sequences
 
 Onto [set 1, challenge 2](https://cryptopals.com/sets/1/challenges/2)!
 
@@ -371,7 +372,7 @@ Append `pub mod fixedxor;` to `cryptobasics/src/lib.rs` so the crate knows about
 
 So, the Haskell implementation above is magically short thanks to `zipWith :: forall a b c. (a -> b -> c) -> [a] -> [b] -> [c]`. I actually wrote something very similar to the Rust code for Haskell, before helpful Haskell told me to use `zipWith`… Rust could readily have something as flexible as `zipWith` since it clearly can express the same ideas. It’s increasingly surprising how I can achieve highly functional code with a systems language intended to displace C/C++.
 
-## Set 1, Challenge 3
+## Set 1, Challenge 3: crack a one-byte XOR cipher
 
 ### Haskell
 ~~~haskell
@@ -469,30 +470,42 @@ fn eng_core(c: u8) -> f32 {
     }
 }
 
-pub fn crack(message: &[u8]) -> (u8, String) {
-    use std::str;
+pub fn xor_score(message: &[u8], key: u8) -> isize {
+    message.iter().fold(0f32, |sum, &c| sum + 100f32 * eng_core(c ^ key)) as isize
+}
 
-    let bestkey: u8 = (0..128u8)
-        .max_by_key(|key| {
-            message.iter().map(|c| c ^ key).fold(0f32, |sum, c| sum + 100f32 * eng_core(c)) as isize
-        })
-        .unwrap();
-    let res: Vec<u8> = message.iter().map(|c| c ^ bestkey).collect();
-    let decoded = str::from_utf8(res.as_slice()).unwrap().to_string();
-    (bestkey, decoded)
+pub fn score(message: &[u8]) -> isize {
+    message.iter().fold(0f32, |sum, &c| sum + 100f32 * eng_core(c)) as isize
+}
+
+pub fn decode(message: &[u8], key: u8) -> Vec<u8> {
+    message.iter().map(|c| c ^ key).collect()
+}
+
+pub fn crack(message: &[u8]) -> u8 {
+    (0..128u8)
+        .max_by_key(|&key| xor_score(message, key))
+        .unwrap()
 }
 
 pub fn demo() {
+    use std::str;
     use hex2bytes;
     let message = "1b37373331363f78151b7f2b783431333d78397828372d363c78373e783a393b3736";
-    assert_eq!((88u8, "Cooking MC's like a pound of bacon".to_string()),
-               crack(&hex2bytes::hex2bytes(message)));
+    let bytes = hex2bytes::hex2bytes(message);
+    let best_key = crack(&bytes);
+    let best_result = decode(&bytes, best_key);
+
+    assert_eq!((88u8, "Cooking MC's like a pound of bacon"),
+               (best_key, str::from_utf8(&best_result).unwrap()));
+
     println!("crack_byte_xor demo passed!");
 }
+}
 ~~~
-A simpler way to do letter frequency-based scoring: just use each character’s percentage as its score.
+This shows a better way to do letter relative scoring: use each character’s frequency as its score. Notice how I’ve split the problem into `score` a string, `decode` a string with a given key, and finally, `crack` an input string by finding the key that maximizes the score—this organization is a result of the next challenge. Originally, I had only `crack` which returned the score-maximizing key and the decoded message as a `String` (so, `str::from_utf8` every invocation of `crack`).
 
-## Challenge 4: Detect single-character XOR
+## Challenge 4: Detect single-byte-XOR-ciphered in a library
 There’s this file, `4.txt`, at page for [set 1, challenge 4](https://cryptopals.com/sets/1/challenges/4).
 
 ### Haskell
@@ -521,3 +534,34 @@ do
 decodeString "7b5a4215415d544115415d5015455447414c155c46155f4058455c5b523f" 53
 ~~~
 It’s actually a bit slow in IHaskell/Jupyter/Hydrogen/Atom, so I should try this in its own compiled binary.
+
+### Rust
+~~~rust
+// included: cryptobasics/src/byte_xor_needle_haystack.rs
+use crack_byte_xor::{decode, score, crack};
+pub fn search(messages: Vec<Vec<u8>>) -> (usize, u8) {
+    (0..messages.len())
+        .map(|idx| (idx, crack(&messages[idx])))
+        .max_by_key(|&(idx, key)| score(&decode(&messages[idx], key)))
+        .unwrap()
+}
+
+pub fn demo() {
+    use std::str;
+    use hex2bytes::hex2bytes;
+    let messages: Vec<_> =
+        include_str!("../resources/4.txt").split('\n').map(|x| hex2bytes(x)).collect();
+
+    let (lino, key) = search(messages);
+
+    assert_eq!((lino, key), (170, 53));
+    println!("byte_xor_needle_haystack demo passed!")
+    // println!("Line #{}, key {} -> {:?}",
+    //          lino,
+    //          key,
+    //          str::from_utf8(&decode(&messages[lino], key)));
+}
+~~~
+I haven’t been talking about it much because I’ve been having so much fun with Rust, but I have to talk about it—I’m having a ton of fun with Rust. Especially with Atom and `linter-rust` highlighting and displaying compiler errors instantly on every save, I’m getting a sense of the few circumstances a type annotation is needed, and of course using “type holes” ((Kris Jenkins)[http://blog.jenkster.com/2016/11/type-bombs-in-elm.html]). This problem and the last I was struggling with iterators, but that concept is coming together. (I still don’t know how to write a function that consumes a slice or an iterator. @stephaneyfx helped with https://is.gd/nZOWvh but that’s not ideal—StackOverflow fodder.)
+
+Now, observe the unfortunate loss of symmetry between the inner and outer maximizations that was so evident in the Haskell version above (with `mostEnglishy` and `mostEnglishy2`). I think both languages could benefit from writing a generic `argmax` function?

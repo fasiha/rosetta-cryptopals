@@ -5,4 +5,5 @@ fn main() {
     cryptobasics::base64encode::demo();
     cryptobasics::fixedxor::demo();
     cryptobasics::crack_byte_xor::demo();
+    cryptobasics::byte_xor_needle_haystack::demo();
 }

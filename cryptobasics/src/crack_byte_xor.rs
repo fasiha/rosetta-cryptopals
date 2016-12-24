@@ -11,23 +11,34 @@ fn eng_core(c: u8) -> f32 {
     }
 }
 
-pub fn crack(message: &[u8]) -> (u8, String) {
-    use std::str;
+pub fn xor_score(message: &[u8], key: u8) -> isize {
+    message.iter().fold(0f32, |sum, &c| sum + 100f32 * eng_core(c ^ key)) as isize
+}
 
-    let bestkey: u8 = (0..128u8)
-        .max_by_key(|key| {
-            message.iter().map(|c| c ^ key).fold(0f32, |sum, c| sum + 100f32 * eng_core(c)) as isize
-        })
-        .unwrap();
-    let res: Vec<u8> = message.iter().map(|c| c ^ bestkey).collect();
-    let decoded = str::from_utf8(res.as_slice()).unwrap().to_string();
-    (bestkey, decoded)
+pub fn score(message: &[u8]) -> isize {
+    message.iter().fold(0f32, |sum, &c| sum + 100f32 * eng_core(c)) as isize
+}
+
+pub fn decode(message: &[u8], key: u8) -> Vec<u8> {
+    message.iter().map(|c| c ^ key).collect()
+}
+
+pub fn crack(message: &[u8]) -> u8 {
+    (0..128u8)
+        .max_by_key(|&key| xor_score(message, key))
+        .unwrap()
 }
 
 pub fn demo() {
+    use std::str;
     use hex2bytes;
     let message = "1b37373331363f78151b7f2b783431333d78397828372d363c78373e783a393b3736";
-    assert_eq!((88u8, "Cooking MC's like a pound of bacon".to_string()),
-               crack(&hex2bytes::hex2bytes(message)));
+    let bytes = hex2bytes::hex2bytes(message);
+    let best_key = crack(&bytes);
+    let best_result = decode(&bytes, best_key);
+
+    assert_eq!((88u8, "Cooking MC's like a pound of bacon"),
+               (best_key, str::from_utf8(&best_result).unwrap()));
+
     println!("crack_byte_xor demo passed!");
 }
