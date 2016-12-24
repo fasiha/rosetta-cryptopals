@@ -1,5 +1,6 @@
 use crack_byte_xor::{decode, score, crack};
-pub fn search(messages: Vec<Vec<u8>>) -> (usize, u8) {
+
+pub fn search(messages: &[Vec<u8>]) -> (usize, u8) {
     (0..messages.len())
         .map(|idx| (idx, crack(&messages[idx])))
         .max_by_key(|&(idx, key)| score(&decode(&messages[idx], key)))
@@ -12,10 +13,10 @@ pub fn demo() {
     let messages: Vec<_> =
         include_str!("../resources/4.txt").split('\n').map(|x| hex2bytes(x)).collect();
 
-    let (lino, key) = search(messages);
+    let (lino, key) = search(&messages);
 
     assert_eq!((lino, key), (170, 53));
-    println!("byte_xor_needle_haystack demo passed!")
+    println!("byte_xor_needle_haystack demo passed!");
     // println!("Line #{}, key {} -> {:?}",
     //          lino,
     //          key,
