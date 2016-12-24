@@ -253,15 +253,13 @@ I created a new Rust module for this challenge: it lives at `cryptobasics/src/ba
 use std::cmp;
 use std::str;
 
-// FIXME: Not ideal that this returns a heap-allocated vector.
-// Consider https://docs.rs/arrayvec/*/arrayvec/struct.ArrayVec.html
-fn triplet2quad(a0: u8, b0: u8, c0: u8) -> Vec<u8> {
+fn triplet2quad(a0: u8, b0: u8, c0: u8) -> [u8; 4] {
     let lut = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789".as_bytes();
     let a = a0 >> 2;
     let b = ((a0 & 0b_0000_0011) << 4) + (b0 >> 4);
     let c = ((b0 & 0b_0000_1111) << 2) + (c0 >> 6);
     let d = c0 & 0b_0011_1111;
-    vec![lut[a as usize], lut[b as usize], lut[c as usize], lut[d as usize]]
+    [lut[a as usize], lut[b as usize], lut[c as usize], lut[d as usize]]
 }
 
 pub fn encode(bytes: Vec<u8>) -> String {
