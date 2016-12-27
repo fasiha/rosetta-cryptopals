@@ -577,7 +577,7 @@ It is, needless to say, instantaneous, even in debug mode (0.33 s). (0.7 s relea
 First, given a message and a fixed secret key, encode the message by repeatedly XORing it with the key ([challenge 5](https://cryptopals.com/sets/1/challenges/5)):
 ~~~rust
 // included: cryptobasics/src/repeat_key_xor.rs
-pub fn encode(message: &[u8], key: &[u8]) -> Vec<u8> {
+pub fn codec(message: &[u8], key: &[u8]) -> Vec<u8> {
     message.iter().enumerate().map(|(i, c)| c ^ key[i % key.len()]).collect()
 }
 
@@ -590,7 +590,7 @@ pub fn demo() {
 I go crazy when I hear a cymbal";
     let key = "ICE";
 
-    let encoded = encode(text.as_bytes(), key.as_bytes());
+    let encoded = codec(text.as_bytes(), key.as_bytes());
 
     assert_eq!(bytestohex(&encoded),
                "0b3637272a2b2e63622c2e69692a23693a2a3c6324202d623d63343c2a26226324272765272\
@@ -604,7 +604,7 @@ a282b2f20430a652e2c652a3124333a653e2b2027630c692b20283165286326302e27282f");
     println!("repeat_key_xor demo passed!")
 }
 ~~~
-Just the first function, `encode()` is needed. And note that because this cipher is symmetric, `encode` also `decode`s. The second function `bytestohex()` is for the demo: for some reason, although the first challenge was base64-encoding, this problem gives the answer in hex, instead of base64.
+Just the first function, `codec()` is needed. This cipher is symmetric so the same function encodes and decodes. The second function `bytestohex()` is for the demo: for some reason, although the first challenge was base64-encoding, this problem gives the answer in hex, instead of base64.
 
 And then, for [challenge 6](https://cryptopals.com/sets/1/challenges/6), Cryptopals gives us a base64-encoded input! They never asked us to write a base64 *decoder*, so I spent most of my time doing that. Having read a lot more of the documentation on [iterators](https://doc.rust-lang.org/std/iter/trait.Iterator.html) and [slices](https://doc.rust-lang.org/std/primitive.slice.html) since I first wrote the `base64encode.rs` module, I was really able to improve first the encoder and then write a short decoder.
 
@@ -709,7 +709,7 @@ pub fn crack(s: &[u8], keysize: usize) -> String { // [🌂]
 
 pub fn demo() {
     use base64decode;
-    use repeat_key_xor::encode as xor_encode;
+    use repeat_key_xor::codec as xor_encode;
     use std::str;
 
     let s1: &[u8] = "this is a test".as_bytes();
@@ -748,3 +748,5 @@ The [problem statement](https://cryptopals.com/sets/1/challenges/6) insisted I u
 (For the record, I don’t really see why the first key-length chunk and the second key-length chunk should have a small edit distance for the correct key length, unless this encodes some kind of ASCII condition?)
 
 I’m mentioning this not to complain but to point out that without the edit distance code, the cracking code, at [🌂], is ~15 lines long. The demo (setting up the data, printing the recovered keys for various key lengths, and finally printing the decoded message with the correct key) is much longer. That is most gratifying.
+
+> Just a quick reminder, to run the code, check it out, and in the `cryptobasics` directory, run `rustup run nightly cargo build --release && rustup run nightly cargo run --release`.

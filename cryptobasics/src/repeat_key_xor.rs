@@ -1,4 +1,4 @@
-pub fn encode(message: &[u8], key: &[u8]) -> Vec<u8> {
+pub fn codec(message: &[u8], key: &[u8]) -> Vec<u8> {
     message.iter().enumerate().map(|(i, c)| c ^ key[i % key.len()]).collect()
 }
 
@@ -11,7 +11,7 @@ pub fn demo() {
 I go crazy when I hear a cymbal";
     let key = "ICE";
 
-    let encoded = encode(text.as_bytes(), key.as_bytes());
+    let encoded = codec(text.as_bytes(), key.as_bytes());
 
     assert_eq!(bytestohex(&encoded),
                "0b3637272a2b2e63622c2e69692a23693a2a3c6324202d623d63343c2a26226324272765272\

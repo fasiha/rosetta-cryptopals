@@ -39,7 +39,7 @@ pub fn crack(s: &[u8], keysize: usize) -> String {
 
 pub fn demo() {
     use base64decode;
-    use repeat_key_xor::encode as xor_encode;
+    use repeat_key_xor::codec as xor_encode;
     use std::str;
 
     let s1: &[u8] = "this is a test".as_bytes();
