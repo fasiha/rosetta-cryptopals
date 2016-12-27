@@ -574,7 +574,7 @@ It is, needless to say, instantaneous, even in debug mode (0.33 s). (0.7 s relea
 ## Challenge 5–6: ciphering and breaking repeating-key XOR
 
 ### Rust
-First, given a message and a fixed secret key, encode the message by repeatedly XORing it the key ([challenge 5](https://cryptopals.com/sets/1/challenges/5)):
+First, given a message and a fixed secret key, encode the message by repeatedly XORing it with the key ([challenge 5](https://cryptopals.com/sets/1/challenges/5)):
 ~~~rust
 // included: cryptobasics/src/repeat_key_xor.rs
 pub fn encode(message: &[u8], key: &[u8]) -> Vec<u8> {
