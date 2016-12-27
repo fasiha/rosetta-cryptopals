@@ -17,14 +17,14 @@ pub fn encode(bytes: &[u8]) -> String {
         let outiter = out.as_mut_slice().chunks_mut(4); // &out is NOT out[..]!
         // TODO: can/should we avoid a match until the last iteration?
         for (v, vo) in initer.zip(outiter) {
-            match v { // [👒]
-                &[x, y, z] => {
+            match *v { // [👒]
+                [x, y, z] => {
                     vo.copy_from_slice(&triplet2quad(x, y, z));
                 }
-                &[x, y] => {
+                [x, y] => {
                     vo[..3].copy_from_slice(&triplet2quad(x, y, 0)[..3]);
                 }
-                &[x] => {
+                [x] => {
                     vo[..2].copy_from_slice(&triplet2quad(x, 0, 0)[..2]);
                 }
                 _ => {}
@@ -34,16 +34,17 @@ pub fn encode(bytes: &[u8]) -> String {
     str::from_utf8(out.as_slice()).unwrap().to_string()
 }
 
-pub fn demo() {
-    use hex2bytes;
 
+pub fn demo() {
     let s = "49276d206b696c6c696e6720796f757220627261696e206c696b65206120706f69736f6e6f7573206d757\
              368726f6f6d";
-    assert_eq!(encode(vec![77u8, 97, 110]), "TWFu");
-    assert_eq!(encode(vec![77u8, 97]), "TWE=");
-    assert_eq!(encode(vec![77u8]), "TQ==");
-    assert_eq!(encode(hex2bytes::hex2bytes(s)),
-               "SSdtIGtpbGxpbmcgeW91ciBicmFpbiBsaWtlIGEgcG9pc29ub3VzIG11c2hyb29t");
+    let base64example = "SSdtIGtpbGxpbmcgeW91ciBicmFpbiBsaWtlIGEgcG9pc29ub3VzIG11c2hyb29t";
+
+    use hex2bytes;
+    assert_eq!(encode(&hex2bytes::hex2bytes(s)), base64example);
+    assert_eq!(encode(&vec![77u8, 97, 110]), "TWFu");
+    assert_eq!(encode(&vec![77u8, 97]), "TWE=");
+    assert_eq!(encode(&vec![77u8]), "TQ==");
+
     println!("base64encode demo passed!");
-    ()
 }
