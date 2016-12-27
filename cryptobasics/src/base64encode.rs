@@ -1,8 +1,7 @@
-use std::cmp;
 use std::str;
 
 fn triplet2quad(a0: u8, b0: u8, c0: u8) -> [u8; 4] {
-    let lut = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789".as_bytes();
+    let lut = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/".as_bytes();
     let a = a0 >> 2;
     let b = ((a0 & 0b_0000_0011) << 4) + (b0 >> 4);
     let c = ((b0 & 0b_0000_1111) << 2) + (c0 >> 6);
@@ -10,21 +9,26 @@ fn triplet2quad(a0: u8, b0: u8, c0: u8) -> [u8; 4] {
     [lut[a as usize], lut[b as usize], lut[c as usize], lut[d as usize]]
 }
 
-pub fn encode(bytes: Vec<u8>) -> String {
-    let mut out: Vec<u8> = vec!['=' as u8; 4 * ((2 + bytes.len()) / 3)];
-    for i in 0..out.len() / 4 {
-        let v = &bytes[i * 3..cmp::min(bytes.len(), i * 3 + 3)];
-        match v { // [👒]
-            &[x, y, z] => {
-                &out[i * 4..i * 4 + 4].copy_from_slice(&triplet2quad(x, y, z));
+pub fn encode(bytes: &[u8]) -> String {
+    // out has 4 * ceil(bytes.len() / 3.0) elements:
+    let mut out: Vec<u8> = vec![b'=' ; 4 * ((2 + bytes.len()) / 3)];
+    let initer = bytes.chunks(3);
+    {
+        let outiter = out.as_mut_slice().chunks_mut(4); // &out is NOT out[..]!
+        // TODO: can/should we avoid a match until the last iteration?
+        for (v, vo) in initer.zip(outiter) {
+            match v { // [👒]
+                &[x, y, z] => {
+                    vo.copy_from_slice(&triplet2quad(x, y, z));
+                }
+                &[x, y] => {
+                    vo[..3].copy_from_slice(&triplet2quad(x, y, 0)[..3]);
+                }
+                &[x] => {
+                    vo[..2].copy_from_slice(&triplet2quad(x, 0, 0)[..2]);
+                }
+                _ => {}
             }
-            &[x, y] => {
-                &out[i * 4..i * 4 + 3].copy_from_slice(&triplet2quad(x, y, 0)[..3]);
-            }
-            &[x] => {
-                &out[i * 4..i * 4 + 2].copy_from_slice(&triplet2quad(x, 0, 0)[..2]);
-            }
-            _ => {}
         }
     }
     str::from_utf8(out.as_slice()).unwrap().to_string()
