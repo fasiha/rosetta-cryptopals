@@ -24,7 +24,6 @@ pub fn decode(s: &[u8]) -> Vec<u8> {
     // `s.len()` is guaranteed to be multiple of 4.
     let mut out: Vec<u8> = vec![0; s.len() / 4 * 3];
     for (v, vo) in s.chunks(4).zip(out.as_mut_slice().chunks_mut(3)) {
-        // println!("v: {:?}", v);
         vo.copy_from_slice(&quad2triplet(v[0],
                                          v[1],
                                          if v[2] == b'=' { b'A' } else { v[2] },

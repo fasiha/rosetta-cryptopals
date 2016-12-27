@@ -12,16 +12,17 @@ pub fn hamming_distance(s1: &[u8], s2: &[u8]) -> usize {
 pub fn normalized_edit_distance(s: &[u8], keysize: usize) -> f32 {
     (hamming_distance(&s[..keysize], &s[keysize..2 * keysize]) as f32) / (keysize as f32)
 }
-pub fn normalized_edit_distance2(s: &[u8], keysize: usize, nblocks: usize) -> f32 {
+
+pub fn normalized_edit_distance2(s: &[u8], keysize: usize, ntimes: usize) -> f32 {
     let num: f32 = s.chunks(2 * keysize)
-        .take(nblocks)
+        .take(ntimes)
         .map(|v| normalized_edit_distance(&v, keysize))
         .sum();
-    num / (nblocks as f32 * keysize as f32)
+    num / (ntimes as f32)
 }
 
-pub fn transpose(s: &[u8], keysize: usize) -> String {
-    use crack_byte_xor::crack;
+pub fn crack(s: &[u8], keysize: usize) -> String {
+    use crack_byte_xor::crack as crack1;
 
     let nchunks = s.len() / keysize;
     let mut sub = vec![0; nchunks];
@@ -30,7 +31,7 @@ pub fn transpose(s: &[u8], keysize: usize) -> String {
         for chunk in 0..nchunks {
             sub[chunk] = s[chunk * keysize + keyidx];
         }
-        best_keys[keyidx] = crack(&sub);
+        best_keys[keyidx] = crack1(&sub);
     }
     use std::str;
     str::from_utf8(best_keys.as_slice()).unwrap().to_string()
@@ -45,7 +46,7 @@ pub fn demo() {
     let s2: &[u8] = "wokka wokka!!!".as_bytes();
     assert_eq!(hamming_distance(s1, s2), 37);
 
-    // Find the key
+    // Load data
     let raw: Vec<u8> = include_str!("../resources/6.txt")
         .as_bytes()
         .iter()
@@ -53,13 +54,18 @@ pub fn demo() {
         .filter(|&x| x != b'\n')
         .collect();
     let message = base64decode::decode(&raw);
+
+    // Find the key
     for keysize in 2..41 {
-        println!("{}: {}", keysize, transpose(&message, keysize));
+        println!("{:02}: {:.2} or {:.2}: {}",
+                 keysize,
+                 normalized_edit_distance(&message, keysize),
+                 normalized_edit_distance2(&message, keysize, 2),
+                 crack(&message, keysize));
     }
 
     // Decode the message
-    let decoded = str::from_utf8(xor_encode(&message, transpose(&message, 29).as_bytes())
-            .as_slice())
+    let decoded = str::from_utf8(xor_encode(&message, crack(&message, 29).as_bytes()).as_slice())
         .unwrap()
         .to_string();
     println!("{}", decoded);

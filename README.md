@@ -23,6 +23,8 @@ My literate-programming-style document of solving the [Cryptopals Crypto Challen
   - [Challenge 4: Detect single-byte-XOR-ciphered in a library](#challenge-4-detect-single-byte-xor-ciphered-in-a-library)
     - [Haskell](#haskell-4)
     - [Rust](#rust-4)
+  - [Challenge 5–6: ciphering and breaking repeating-key XOR](#challenge-56-ciphering-and-breaking-repeating-key-xor)
+    - [Rust](#rust-5)
 
 <!-- TOC END -->
 
@@ -568,3 +570,181 @@ I haven’t been talking about it much because I’ve been having so much fun wi
 Now, observe the unfortunate loss of symmetry between the inner and outer maximizations that was so evident in the Haskell version above (with `mostEnglishy` and `mostEnglishy2`). I think both languages could benefit from writing a generic `argmax` function?
 
 It is, needless to say, instantaneous, even in debug mode (0.33 s). (0.7 s release mode.)
+
+## Challenge 5–6: ciphering and breaking repeating-key XOR
+
+### Rust
+First, given a message and a fixed secret key, encode the message by repeatedly XORing it the key ([challenge 5](https://cryptopals.com/sets/1/challenges/5)):
+~~~rust
+// included: cryptobasics/src/repeat_key_xor.rs
+pub fn encode(message: &[u8], key: &[u8]) -> Vec<u8> {
+    message.iter().enumerate().map(|(i, c)| c ^ key[i % key.len()]).collect()
+}
+
+pub fn bytestohex(v: &[u8]) -> String {
+    v.iter().map(|x| format!("{:02x}", x)).collect::<Vec<String>>().concat()
+}
+
+pub fn demo() {
+    let text = "Burning 'em, if you ain't quick and nimble
+I go crazy when I hear a cymbal";
+    let key = "ICE";
+
+    let encoded = encode(text.as_bytes(), key.as_bytes());
+
+    assert_eq!(bytestohex(&encoded),
+               "0b3637272a2b2e63622c2e69692a23693a2a3c6324202d623d63343c2a26226324272765272\
+a282b2f20430a652e2c652a3124333a653e2b2027630c692b20283165286326302e27282f");
+
+    // Just go the other way too!
+    use hex2bytes::hex2bytes;
+    assert_eq!(encoded,
+               hex2bytes("0b3637272a2b2e63622c2e69692a23693a2a3c6324202d623d63343c2a2622632\
+4272765272a282b2f20430a652e2c652a3124333a653e2b2027630c692b20283165286326302e27282f"));
+    println!("repeat_key_xor demo passed!")
+}
+~~~
+Just the first function, `encode()` is needed. And note that because this cipher is symmetric, `encode` also `decode`s. The second function `bytestohex()` is for the demo: for some reason, although the first challenge was base64-encoding, this problem gives the answer in hex, instead of base64.
+
+And then, for [challenge 6](https://cryptopals.com/sets/1/challenges/6), Cryptopals gives us a base64-encoded input! They never asked us to write a base64 *decoder*, so I spent most of my time doing that. Having read a lot more of the documentation on [iterators](https://doc.rust-lang.org/std/iter/trait.Iterator.html) and [slices](https://doc.rust-lang.org/std/primitive.slice.html) since I first wrote the `base64encode.rs` module, I was really able to improve first the encoder and then write a short decoder.
+
+Here’s the encoder, rewritten:
+~~~rust
+// included: cryptobasics/src/base64encode.rs
+use std::str;
+
+fn triplet2quad(a0: u8, b0: u8, c0: u8) -> [u8; 4] {
+    let lut = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/".as_bytes();
+    let a = a0 >> 2;
+    let b = ((a0 & 0b_0000_0011) << 4) + (b0 >> 4);
+    let c = ((b0 & 0b_0000_1111) << 2) + (c0 >> 6);
+    let d = c0 & 0b_0011_1111;
+    [lut[a as usize], lut[b as usize], lut[c as usize], lut[d as usize]]
+}
+
+pub fn encode(bytes: &[u8]) -> String {
+    // out has 4 * ceil(bytes.len() / 3.0) elements:
+    let mut out: Vec<u8> = vec![b'=' ; 4 * ((2 + bytes.len()) / 3)];
+    let initer = bytes.chunks(3);
+    {
+        let outiter = out.as_mut_slice().chunks_mut(4); // &out is NOT out[..]!
+        // TODO: can/should we avoid a match until the last iteration?
+        for (v, vo) in initer.zip(outiter) {
+            match *v { // [👒]
+                [x, y, z] => {
+                    vo.copy_from_slice(&triplet2quad(x, y, z));
+                }
+                [x, y] => {
+                    vo[..3].copy_from_slice(&triplet2quad(x, y, 0)[..3]);
+                }
+                [x] => {
+                    vo[..2].copy_from_slice(&triplet2quad(x, 0, 0)[..2]);
+                }
+                _ => {}
+            }
+        }
+    }
+    str::from_utf8(out.as_slice()).unwrap().to_string()
+}
+
+pub fn demo() {
+    let s = "49276d206b696c6c696e6720796f757220627261696e206c696b65206120706f69736f6e6f7573206d757\
+             368726f6f6d";
+    let base64example = "SSdtIGtpbGxpbmcgeW91ciBicmFpbiBsaWtlIGEgcG9pc29ub3VzIG11c2hyb29t";
+
+    use hex2bytes;
+    assert_eq!(encode(&hex2bytes::hex2bytes(s)), base64example);
+    assert_eq!(encode(&vec![77u8, 97, 110]), "TWFu");
+    assert_eq!(encode(&vec![77u8, 97]), "TWE=");
+    assert_eq!(encode(&vec![77u8]), "TQ==");
+
+    println!("base64encode demo passed!");
+}
+~~~
+Thanks to using two iterators, one for the input and one for the output, I no longer have any complicated indexing arithmetic—**hooray** 🙌! This is a huge win for me because this was kind of a litmus test for Rust: in functional languages, from Clojure to Haskell, I love mapping and folding over collections and avoiding hard-to-write, hard-to-believe, and hard-to-check indexing arithmetic. Rust just showed me that it can obviate that also. I will have to analyze the codegen (by diving into x64 assembly) to make sure these magical iterator abstractionas are indeed zero-cost, but I am *very* pleased.
+
+I won’t put the decoder here. It’s in `cryptobasics/src/base64decode.rs` and follows the encoder pretty closely. (It’s actually less complicated than the encoder because we can assume the encoded text has multiple-of-four length.)
+
+With this sorted, finally I was able to test my attack code.
+~~~rust
+// included: cryptobasics/src/crack_repeat_key_xor.rs
+pub fn onbits(x: u8) -> usize {
+    (0..8).map(|n| ((x >> n) & 1u8) as usize).sum()
+}
+
+pub fn hamming_distance(s1: &[u8], s2: &[u8]) -> usize {
+    s1.iter()
+        .zip(s2.iter())
+        .map(|(&x, &y)| onbits(x ^ y))
+        .sum()
+}
+
+pub fn normalized_edit_distance(s: &[u8], keysize: usize) -> f32 {
+    (hamming_distance(&s[..keysize], &s[keysize..2 * keysize]) as f32) / (keysize as f32)
+}
+
+pub fn normalized_edit_distance2(s: &[u8], keysize: usize, ntimes: usize) -> f32 {
+    let num: f32 = s.chunks(2 * keysize)
+        .take(ntimes)
+        .map(|v| normalized_edit_distance(&v, keysize))
+        .sum();
+    num / (ntimes as f32)
+}
+
+pub fn crack(s: &[u8], keysize: usize) -> String { // [🌂]
+    use crack_byte_xor::crack as crack1;
+
+    let nchunks = s.len() / keysize;
+    let mut sub = vec![0; nchunks];
+    let mut best_keys = vec![0; keysize];
+    for keyidx in 0..keysize {
+        for chunk in 0..nchunks {
+            sub[chunk] = s[chunk * keysize + keyidx];
+        }
+        best_keys[keyidx] = crack1(&sub);
+    }
+    use std::str;
+    str::from_utf8(best_keys.as_slice()).unwrap().to_string()
+}
+
+pub fn demo() {
+    use base64decode;
+    use repeat_key_xor::encode as xor_encode;
+    use std::str;
+
+    let s1: &[u8] = "this is a test".as_bytes();
+    let s2: &[u8] = "wokka wokka!!!".as_bytes();
+    assert_eq!(hamming_distance(s1, s2), 37);
+
+    // Load data
+    let raw: Vec<u8> = include_str!("../resources/6.txt")
+        .as_bytes()
+        .iter()
+        .map(|&x| x)
+        .filter(|&x| x != b'\n')
+        .collect();
+    let message = base64decode::decode(&raw);
+
+    // Find the key
+    for keysize in 2..41 {
+        println!("{:02}: {:.2} or {:.2}: {}",
+                 keysize,
+                 normalized_edit_distance(&message, keysize),
+                 normalized_edit_distance2(&message, keysize, 2),
+                 crack(&message, keysize));
+    }
+
+    // Decode the message
+    let decoded = str::from_utf8(xor_encode(&message, crack(&message, 29).as_bytes()).as_slice())
+        .unwrap()
+        .to_string();
+    println!("{}", decoded);
+
+    println!("Passed crack_repeat_key_xor demo!");
+}
+~~~
+The [problem statement](https://cryptopals.com/sets/1/challenges/6) insisted I use normalized edit distances as some kind of entropy-quantifying metric to decide the key length. Although I got the unit test to work straightforwardly (“wokka wokka!!!”), I settled on the “correct” key length just by inspecting them all. Either I’m implementing the distance calculations incorrectly, or… well, I suppose that’s the only possibility since they assure me their recipe is correct.
+
+(For the record, I don’t really see why the first key-length chunk and the second key-length chunk should have a small edit distance for the correct key length, unless this encodes some kind of ASCII condition?)
+
+I’m mentioning this not to complain but to point out that without the edit distance code, the cracking code, at [🌂], is ~15 lines long. The demo (setting up the data, printing the recovered keys for various key lengths, and finally printing the decoded message with the correct key) is much longer. That is most gratifying.

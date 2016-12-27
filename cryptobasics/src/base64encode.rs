@@ -34,7 +34,6 @@ pub fn encode(bytes: &[u8]) -> String {
     str::from_utf8(out.as_slice()).unwrap().to_string()
 }
 
-
 pub fn demo() {
     let s = "49276d206b696c6c696e6720796f757220627261696e206c696b65206120706f69736f6e6f7573206d757\
              368726f6f6d";
