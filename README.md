@@ -693,7 +693,8 @@ pub fn normalized_edit_distance2(s: &[u8], keysize: usize, ntimes: usize) -> f32
     num / (ntimes as f32)
 }
 
-pub fn crack(s: &[u8], keysize: usize) -> String { // [🌂]
+pub fn crack(s: &[u8], keysize: usize) -> String {
+    // [🌂]
     use crack_byte_xor::crack as crack1;
 
     let nchunks = s.len() / keysize;
@@ -727,20 +728,26 @@ pub fn demo() {
         .collect();
     let message = base64decode::decode(&raw);
 
-    // Find the key
-    for keysize in 2..41 {
-        println!("{:02}: {:.2} or {:.2}: {}",
-                 keysize,
-                 normalized_edit_distance(&message, keysize),
-                 normalized_edit_distance2(&message, keysize, 2),
-                 crack(&message, keysize));
-    }
-
     // Decode the message
-    let decoded = str::from_utf8(xor_encode(&message, crack(&message, 29).as_bytes()).as_slice())
+    assert_eq!("Terminator X: Bring the noise", crack(&message, 29));
+    let printable = str::from_utf8(xor_encode(&message, crack(&message, 29).as_bytes()).as_slice())
         .unwrap()
         .to_string();
-    println!("{}", decoded);
+    assert!(printable.starts_with("I'm back and I'm ringin' the bell"));
+    assert!(printable.ends_with("Play that funky music \n"));
+
+    // Display runtime information?
+    if !true {
+        // Find the key
+        for keysize in 2..41 {
+            println!("{:02}: {:.2} or {:.2}: {}",
+                     keysize,
+                     normalized_edit_distance(&message, keysize),
+                     normalized_edit_distance2(&message, keysize, 2),
+                     crack(&message, keysize));
+        }
+        println!("{}", printable);
+    }
 
     println!("Passed crack_repeat_key_xor demo!");
 }

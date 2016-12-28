@@ -22,6 +22,7 @@ pub fn normalized_edit_distance2(s: &[u8], keysize: usize, ntimes: usize) -> f32
 }
 
 pub fn crack(s: &[u8], keysize: usize) -> String {
+    // [🌂]
     use crack_byte_xor::crack as crack1;
 
     let nchunks = s.len() / keysize;
@@ -73,7 +74,6 @@ pub fn demo() {
                      normalized_edit_distance2(&message, keysize, 2),
                      crack(&message, keysize));
         }
-
         println!("{}", printable);
     }
 
