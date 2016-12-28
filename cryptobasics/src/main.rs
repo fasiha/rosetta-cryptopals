@@ -9,4 +9,5 @@ fn main() {
     cryptobasics::repeat_key_xor::demo();
     cryptobasics::base64decode::demo();
     cryptobasics::crack_repeat_key_xor::demo();
+    cryptobasics::decode_aes128ecb::demo();
 }
