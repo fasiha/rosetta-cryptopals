@@ -25,6 +25,8 @@ My literate-programming-style document of solving the [Cryptopals Crypto Challen
     - [Rust](#rust-4)
   - [Challenge 5–6: ciphering and breaking repeating-key XOR](#challenge-56-ciphering-and-breaking-repeating-key-xor)
     - [Rust](#rust-5)
+  - [Problem 7: decoding AES-128-ECB with key](#problem-7-decoding-aes-128-ecb-with-key)
+    - [Rust](#rust-6)
 
 <!-- TOC END -->
 
@@ -750,3 +752,43 @@ The [problem statement](https://cryptopals.com/sets/1/challenges/6) insisted I u
 I’m mentioning this not to complain but to point out that without the edit distance code, the cracking code, at [🌂], is ~15 lines long. The demo (setting up the data, printing the recovered keys for various key lengths, and finally printing the decoded message with the correct key) is much longer. That is most gratifying.
 
 > Just a quick reminder, to run the code, check it out, and in the `cryptobasics` directory, run `rustup run nightly cargo build --release && rustup run nightly cargo run --release`.
+
+## Problem 7: decoding AES-128-ECB with key
+[Problem statement](https://cryptopals.com/sets/1/challenges/7).
+
+### Rust
+Using the [`rust-openssl` bindings](https://docs.rs/openssl/0.9.4/openssl/) (see my [example](https://github.com/sfackler/rust-openssl/issues/40#issuecomment-269417798)).
+
+~~~rust
+// included: cryptobasics/src/decode_aes128ecb.rs
+use openssl::symm::{Cipher, Crypter, Mode};
+
+pub fn demo() {
+    use base64decode;
+
+    let raw: Vec<u8> = include_str!("../resources/7.txt")
+        .as_bytes()
+        .iter()
+        .map(|&x| x)
+        .filter(|&x| x != b'\n')
+        .collect();
+    let message = base64decode::decode(&raw);
+
+    let key = "YELLOW SUBMARINE".as_bytes();
+
+    let decrypter = Crypter::new(Cipher::aes_128_ecb(), Mode::Decrypt, key, None);
+    let mut decrypted = vec![0u8; message.len() + key.len()];
+    decrypter.unwrap().update(&message, decrypted.as_mut_slice()).unwrap();
+
+    use std::str;
+    let printable = str::from_utf8(&decrypted)
+        .unwrap()
+        .to_string();
+
+    assert!(printable.starts_with("I'm back and I'm ringin' the bell"));
+    // println!("Decoded: {}", printable);
+
+    println!("decode_aes128ecb demo passed!")
+}
+~~~
+I didn’t appreciate it before, but crypto is an ugly, ugly world. Are all evolutionary arms races this Hobbesian?
