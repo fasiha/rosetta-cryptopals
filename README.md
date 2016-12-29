@@ -27,6 +27,8 @@ My literate-programming-style document of solving the [Cryptopals Crypto Challen
     - [Rust](#rust-5)
   - [Problem 7: decoding AES-128-ECB with key](#problem-7-decoding-aes-128-ecb-with-key)
     - [Rust](#rust-6)
+  - [Challenge 8: detect AES in ECB](#challenge-8-detect-aes-in-ecb)
+    - [Shell script](#shell-script)
 
 <!-- TOC END -->
 
@@ -801,3 +803,27 @@ pub fn demo() {
 }
 ~~~
 I didn’t appreciate it before, but crypto is an ugly, ugly world. Are all evolutionary arms races this Hobbesian?
+
+## Challenge 8: detect AES in ECB
+Given a bunch of ciphertexts (of same length), find the one that’s been encrypted by AES in ECB mode, with an unknown key. [Problem statement.](https://cryptopals.com/sets/1/challenges/8)
+
+### Shell script
+~~~sh
+✗ cat 8.txt | sed 's/\(.\{32\}\)/\1\n/g' | sort | uniq -c | sort | tail
+1 fe6913515a1e27978827dfd2b44b08d0
+1 fe78202740befc9638063f02558db37d
+1 fe8566cac240c3bf6628c758feeb458b
+1 fec7cb9a60020ce11e2c59323752c542
+1 ff05860332fece4a9fe1b49188e7c82f
+1 ff43b2ab045a712372ce8f8a229e8452
+1 ffb555283e4c07914f82dc6dae5e8f3b
+1 ffb8cb0e1b4c4b00e8bb3652fb80bd6b
+4 08649af70dc06f4fd5d2d69c744cd283
+204
+
+✗ grep -n 08649af70dc06f4fd5d2d69c744cd283 8.txt
+133:d880619740a8a19b7840a8a31c810a3d08649af70dc06f4fd5d2d69c744cd283e2dd052f6b641dbf9d11b0348542bb5708649af70dc06f4fd5d2d69c744cd2839475c9dfdbc1d46597949d9c7e82bf5a08649af70dc06f4fd5d2d69c744cd28397a93eab8d6aecd566489154789a6b0308649af70dc06f4fd5d2d69c744cd283d403180c98c8f6db1f2a3f9c4040deb0ab51b29933f2c123c58386b06fba186a
+~~~
+So in this one ciphertext, the same 16-byte (32-hexit) sequence was repeated four times, which gave it away: line 133, with the repeats highlighted is:
+
+d880619740a8a19b7840a8a31c810a3d **08649af70dc06f4fd5d2d69c744cd283** e2dd052f6b641dbf9d11b0348542bb57 **08649af70dc06f4fd5d2d69c744cd283** 9475c9dfdbc1d46597949d9c7e82bf5a **08649af70dc06f4fd5d2d69c744cd283** 97a93eab8d6aecd566489154789a6b03 **08649af70dc06f4fd5d2d69c744cd283** d403180c98c8f6db1f2a3f9c4040deb0 ab51b29933f2c123c58386b06fba186a
