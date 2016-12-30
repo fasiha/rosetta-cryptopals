@@ -2,7 +2,11 @@
 name = "cryptobasics"
 version = "0.1.0"
 authors = ["Ahmed Fasih <wuzzyview@gmail.com>"]
+build = "build.rs"
 
 [dependencies]
 openssl = "0.9.4"
 rustc-serialize = "0.3"
+
+[build-dependencies]
+gcc = "0.3"

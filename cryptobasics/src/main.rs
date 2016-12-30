@@ -10,4 +10,6 @@ fn main() {
     cryptobasics::base64decode::demo();
     cryptobasics::crack_repeat_key_xor::demo();
     cryptobasics::decode_aes128ecb::demo();
+
+    cryptobasics::c_hex2bytes::demo();
 }

@@ -10,3 +10,5 @@ pub mod repeat_key_xor;
 pub mod crack_repeat_key_xor;
 pub mod base64decode;
 pub mod decode_aes128ecb;
+
+pub mod c_hex2bytes;
