@@ -1,5 +1,3 @@
-#include <stdlib.h>
-
 char unhex(char a) {
   if (a >= '0' && a <= '9') {
     return a - '0';

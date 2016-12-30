@@ -176,8 +176,6 @@ So, M. Rust-Zero-Cost-Abstractions-Systems-Programming-Language. Let me feel the
 With that by way of explanation—I’ve embedded C ports of core functions in my Rust project. These C functions are built and tested by Rust. I followed the instructions accompanying the [gcc-rs](https://github.com/alexcrichton/gcc-rs#using-gcc-rs) crate: `cryptobasics/build.rs` and `cryptobasics/src/c_hex2bytes.rs` comprise wrapper support infrastructure to the C code, which lives in `cryptobasics/src/hex2bytes.c`:
 ```cpp
 // included: cryptobasics/src/hex2bytes.c
-#include <stdlib.h>
-
 char unhex(char a) {
   if (a >= '0' && a <= '9') {
     return a - '0';
