@@ -5,6 +5,7 @@ fn base64byte_to_idx(a: u8) -> u8 {
         '0'...'9' => a - ('0' as u8) + 52,
         '+' => 62,
         '/' => 63,
+        '=' => 0,
         _ => panic!("Invalid base64 character!"),
     }
 }
@@ -24,10 +25,7 @@ pub fn decode(s: &[u8]) -> Vec<u8> {
     // `s.len()` is guaranteed to be multiple of 4.
     let mut out: Vec<u8> = vec![0; s.len() / 4 * 3];
     for (v, vo) in s.chunks(4).zip(out.as_mut_slice().chunks_mut(3)) {
-        vo.copy_from_slice(&quad2triplet(v[0],
-                                         v[1],
-                                         if v[2] == b'=' { b'A' } else { v[2] },
-                                         if v[3] == b'=' { b'A' } else { v[3] }))
+        vo.copy_from_slice(&quad2triplet(v[0], v[1], v[2], v[3]))
     }
     if s.len() > 0 {
         if s[s.len() - 1] == b'=' {
