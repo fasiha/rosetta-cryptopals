@@ -10,6 +10,7 @@ My literate-programming-style document of solving the [Cryptopals Crypto Challen
     - [Octave/Matlab](#octavematlab)
     - [Haskell](#haskell)
     - [Rust](#rust)
+    - [C](#c)
   - [Bytes⟹Base64](#bytesbase64)
     - [Octave](#octave)
     - [Haskell](#haskell-1)
@@ -162,6 +163,41 @@ fn main() {
 }
 ~~~
 you can run `cargo build && cargo run` inside the `cryptobasics` directory. `hex2bytes::demo()` will create `crust.bin`, with the same contents as the above Octave and Haskell implementations. I am sure I’m not doing error handing with `Result` properly (`try!()` and `unwrap()`)—please enlighten me!
+
+### C
+Umm.
+
+Well, some explanation—I started investigating Rust because I need to write some Fast CPU Code at work and I’d be damned if I wrote another `int i = 0;` again (or `auto i = 0;` for that matter). After working through this and a couple more Cryptopals challenges below with Rust, I could say I liked Rust a lot.
+
+So.
+
+So, Mr Rust-Zero-Cost-Abstractions-Systems-Programming-Language. Let me feel the fiber of your fabric. Show me the codegen. If I can enjoy C-grade x64 binaries with near-ML-grade expressivity, the gods will have been too kind.
+
+With that by way of explanation—I’ve embedded C ports of core functions in my Rust project. These C functions are built and tested by Rust. I followed the instructions accompanying the [gcc-rs](https://github.com/alexcrichton/gcc-rs#using-gcc-rs) crate: `cryptobasics/build.rs` and `cryptobasics/src/c_hex2bytes.rs` comprise wrapper support infrastructure to the C code, which lives in `cryptobasics/src/hex2bytes.c`:
+```cpp
+// included: cryptobasics/src/hex2bytes.c
+#include <stdlib.h>
+
+char unhex(char a) {
+  if (a >= '0' && a <= '9') {
+    return a - '0';
+  } else if (a >= 'A' && a <= 'F') {
+    return a - 'A' + 10;
+  } else if (a >= 'a' && a <= 'f') {
+    return a - 'a' + 10;
+  }
+  return 0xff;
+}
+
+char parse_hex_hex(char a, char b) { return 16 * unhex(a) + unhex(b); }
+
+void hex2bytes(const char * const s, int N, char * const out) {
+  for (int i = 0; i < N; i += 2) {
+    out[i / 2] = parse_hex_hex(s[i], s[i + 1]);
+  }
+}
+```
+Work in progress: compare codegen on x64.
 
 ## Bytes⟹Base64
 
