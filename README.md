@@ -171,7 +171,7 @@ Well, some explanation—I started investigating Rust because I need to write so
 
 So.
 
-So, Mr Rust-Zero-Cost-Abstractions-Systems-Programming-Language. Let me feel the fiber of your fabric. Show me the codegen. If I can enjoy C-grade x64 binaries with near-ML-grade expressivity, the gods will have been too kind.
+So, M. Rust-Zero-Cost-Abstractions-Systems-Programming-Language. Let me feel the fiber of your fabric. Show me the codegen. If I can enjoy C-grade x64 binaries with near-ML-grade expressivity, the gods will have been too kind.
 
 With that by way of explanation—I’ve embedded C ports of core functions in my Rust project. These C functions are built and tested by Rust. I followed the instructions accompanying the [gcc-rs](https://github.com/alexcrichton/gcc-rs#using-gcc-rs) crate: `cryptobasics/build.rs` and `cryptobasics/src/c_hex2bytes.rs` comprise wrapper support infrastructure to the C code, which lives in `cryptobasics/src/hex2bytes.c`:
 ```cpp
