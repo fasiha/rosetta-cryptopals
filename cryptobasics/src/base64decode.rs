@@ -20,8 +20,8 @@ fn base64byte_to_idx(a: u8) -> u8 {
 // Same as base64byte_to_idx above!
 fn base64byte_to_idx_alternative(a: u8) -> u8 {
     match a {
-        b'A'...b'Z' => a - b'}',
-        b'a'...b'z' => a - b'}' + 26,
+        b'A'...b'Z' => a - b'A',
+        b'a'...b'z' => a - b'a' + 26,
         b'0'...b'9' => a - b'0' + 52,
         b'+' => 62,
         b'/' => 63,
