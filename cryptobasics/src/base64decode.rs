@@ -1,11 +1,31 @@
+static CHARS: [u8; 128] =
+    [b'}', b'}', b'}', b'}', b'}', b'}', b'}', b'}', b'}', b'}', b'}', b'}', b'}', b'}', b'}',
+     b'}', b'}', b'}', b'}', b'}', b'}', b'}', b'}', b'}', b'}', b'}', b'}', b'}', b'}', b'}',
+     b'}', b'}', b'}', b'}', b'}', b'}', b'}', b'}', b'}', b'}', b'}', b'}', b'}', 62, b'}', b'}',
+     b'}', 63, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, b'}', b'}', b'}', 0, b'}', b'}', b'}', 0,
+     1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25,
+     b'}', b'}', b'}', b'}', b'}', b'}', 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39,
+     40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, b'}', b'}', b'}', b'}', b'}'];
+// Recall, b'}' is 126! The highest index in Base64 is 63, so b'}' represents an invalid character.
+
 fn base64byte_to_idx(a: u8) -> u8 {
-    match a as char {
-        'A'...'Z' => a - ('A' as u8),
-        'a'...'z' => a - ('a' as u8) + 26,
-        '0'...'9' => a - ('0' as u8) + 52,
-        '+' => 62,
-        '/' => 63,
-        '=' => 0,
+    let x = CHARS[a as usize];
+    if x <= 63 {
+        return x;
+    } else {
+        panic!("Invalid base64 character!")
+    }
+}
+
+// Same as base64byte_to_idx above!
+fn base64byte_to_idx_alternative(a: u8) -> u8 {
+    match a {
+        b'A'...b'Z' => a - b'}',
+        b'a'...b'z' => a - b'}' + 26,
+        b'0'...b'9' => a - b'0' + 52,
+        b'+' => 62,
+        b'/' => 63,
+        b'=' => 0,
         _ => panic!("Invalid base64 character!"),
     }
 }
